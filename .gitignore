@@ -1,0 +1,9 @@
+# 环境变量（严禁提交真实 API Key）
+.env
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

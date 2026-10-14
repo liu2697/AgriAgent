@@ -1,0 +1,531 @@
+[
+  {
+    "crop": "玉米",
+    "category": "disease",
+    "disease": "玉米大斑病",
+    "aliases": [
+      "大斑病",
+      "玉米叶枯病",
+      "玉米大枯病"
+    ],
+    "growth_stage": [
+      "生长中后期"
+    ],
+    "symptoms": [
+      "叶片出现褐色长条斑",
+      "病斑呈梭形或长椭圆形",
+      "病斑边缘暗褐色中央淡褐色",
+      "多个病斑汇合后叶片枯死",
+      "严重时整株叶片枯黄"
+    ],
+    "favorable_conditions": [
+      "发病适宜温度 20-25℃",
+      "低温高湿、连阴雨",
+      "田间郁闭、通风透光差"
+    ],
+    "occurrence_conditions": [
+      "高温高湿（气温 20-28℃，相对湿度 80% 以上）",
+      "连作玉米地块",
+      "氮肥过量、植株徒长",
+      "品种抗性差"
+    ],
+    "risk_factors": [
+      "重茬连作地块",
+      "偏施氮肥",
+      "种植密度过大",
+      "地势低洼积水"
+    ],
+    "diagnosis_features": [
+      "病斑沿叶脉纵向扩展",
+      "病斑大而明显，典型梭形",
+      "后期病斑上产生黑色霉层"
+    ],
+    "prevention": [
+      "选用抗病品种（如郑单 958、先玉 335 等）",
+      "合理密植，避免偏施氮肥",
+      "收获后深翻灭茬，减少菌源",
+      "与豆科作物轮作 2-3 年",
+      "雨后及时排除田间积水"
+    ],
+    "control_measures": [
+      "以病株率 10%、病叶率 5% 为防治启动指标",
+      "零星发病地块及时挑治，发病较重地块全面普防",
+      "抓住发病初期用药，雨前预防、雨后补防，间隔 7-10 天连防 1-2 次"
+    ],
+    "chemical_control": [
+      "苯醚甲环唑",
+      "吡唑醚菌酯",
+      "丙环唑",
+      "氟硅唑",
+      "丙环·嘧菌酯",
+      "肟菌·戊唑醇"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "region": [
+      "陕西",
+      "北方春玉米区",
+      "北方大田"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "苯醚甲环唑",
+        "吡唑醚菌酯",
+        "丙环唑",
+        "氟硅唑"
+      ],
+      "dosage": "25% 苯醚甲环唑 2000 倍液，或 25% 吡唑醚菌酯 3000 倍液",
+      "application_timing": "发病初期喷施，7-10 天一次，连喷 2-3 次",
+      "safety_interval": "安全间隔期 21 天"
+    },
+    "risk_level": "中",
+    "source": "陕西省农业农村厅（绥德县农业技术服务中心）",
+    "source_title": "绥德：玉米大斑病发生特点及中后期综合防控技术",
+    "source_date": "2026-08-06",
+    "source_url": "http://nynct.shaanxi.gov.cn/zt/snzbxx/zbjs/202608/t20260806_3664219.html",
+    "source_status": "verified"
+  },
+  {
+    "crop": "玉米",
+    "category": "disease",
+    "disease": "玉米小斑病",
+    "aliases": [
+      "小斑病",
+      "玉米斑点病"
+    ],
+    "growth_stage": [
+      "抽雄期"
+    ],
+    "symptoms": [
+      "叶片出现褐色小斑点",
+      "病斑近圆形或长方形",
+      "病斑边缘紫褐色",
+      "病斑密集时叶片枯死"
+    ],
+    "favorable_conditions": [
+      "最适发病温度约 25℃",
+      "相对湿度大于 90%",
+      "北方 7-8 月多雨年份易发病"
+    ],
+    "occurrence_conditions": [
+      "温暖潮湿（气温 25-30℃）",
+      "连作地块菌源量大",
+      "植株生长瘦弱"
+    ],
+    "risk_factors": [],
+    "diagnosis_features": [
+      "病斑较小，直径 1-3mm",
+      "病斑数量多、分布密",
+      "后期病斑上产生灰褐色霉层"
+    ],
+    "prevention": [
+      "选用抗病杂交种",
+      "合理施肥，增施磷钾肥",
+      "及时清除病残体"
+    ],
+    "control_measures": [
+      "发病初期选用登记杀菌剂喷施，视发病情况隔 7-10 天再喷 1 次"
+    ],
+    "chemical_control": [
+      "代森锰锌",
+      "甲基硫菌灵",
+      "多菌灵"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "region": [
+      "全国",
+      "黄淮海夏播玉米区",
+      "北方大田"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "代森锰锌",
+        "甲基硫菌灵",
+        "多菌灵"
+      ],
+      "dosage": "70% 甲基硫菌灵可湿性粉剂 800 倍液",
+      "application_timing": "发病初期喷施，7-10 天一次",
+      "safety_interval": "安全间隔期 15 天"
+    },
+    "risk_level": "低",
+    "source": "全国农业技术推广服务中心（全国玉米田间管理和防灾减灾技术培训班教材，主讲：中国农科院植保所 王振营）",
+    "source_title": "玉米主要病虫害发生与防控技术",
+    "source_date": "2022-07-06",
+    "source_url": "https://www.natesc.org.cn/admin/UploadFile/dataDoload/202207110848521835.pdf",
+    "source_status": "verified"
+  },
+  {
+    "crop": "玉米",
+    "category": "disease",
+    "disease": "玉米锈病",
+    "aliases": [
+      "锈病",
+      "玉米黄锈病",
+      "玉米柄锈病"
+    ],
+    "growth_stage": [
+      "抽雄期",
+      "灌浆期"
+    ],
+    "symptoms": [
+      "叶片出现黄褐色小斑点",
+      "病斑隆起呈疱状",
+      "表皮破裂后散出黄色粉末",
+      "严重时叶片布满锈斑枯死"
+    ],
+    "favorable_conditions": [
+      "夏孢子萌发适宜温度约 25℃",
+      "相对湿度较大时利于发生发展"
+    ],
+    "occurrence_conditions": [
+      "气温 20-25℃，连续阴雨",
+      "品种抗性差",
+      "靠近小麦、高粱等锈病寄主"
+    ],
+    "risk_factors": [
+      "偏施氮肥会加重病害",
+      "早熟品种一般较易发病"
+    ],
+    "diagnosis_features": [
+      "病斑呈疱状突起",
+      "破裂后有铁锈色粉末",
+      "主要危害叶片，严重时蔓延至茎秆"
+    ],
+    "prevention": [
+      "选用抗锈病品种",
+      "避免与麦类邻作",
+      "合理施肥，避免植株过密、氮肥过量"
+    ],
+    "control_measures": [
+      "田间病株率达 5% 或病叶率达 3% 时立即施药",
+      "抓住发病初期关键窗口期施药，间隔 7-10 天视病情连防 1-2 次",
+      "施药后遇降雨及时补喷"
+    ],
+    "chemical_control": [
+      "三唑酮",
+      "烯唑醇",
+      "戊唑醇",
+      "吡唑醚菌酯",
+      "苯醚甲环唑",
+      "肟菌·戊唑醇"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "region": [
+      "陕西",
+      "北方玉米区"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "三唑酮",
+        "烯唑醇",
+        "戊唑醇",
+        "吡唑醚菌酯"
+      ],
+      "dosage": "15% 三唑酮可湿性粉剂 1500 倍液",
+      "application_timing": "发病初期喷施，10-15 天一次",
+      "safety_interval": "安全间隔期 21 天"
+    },
+    "risk_level": "中",
+    "source": "陕西省农业农村厅（榆阳区农业技术推广中心）",
+    "source_title": "榆阳：玉米锈病的发生与防治",
+    "source_date": "2026-07-29",
+    "source_url": "http://nynct.shaanxi.gov.cn/zt/snzbxx/zbjs/202607/t20260729_3661440.html",
+    "source_status": "verified"
+  },
+  {
+    "crop": "玉米",
+    "category": "disease",
+    "disease": "玉米蚜虫",
+    "aliases": [
+      "蚜虫",
+      "腻虫",
+      "玉米蜜虫"
+    ],
+    "growth_stage": [
+      "苗期",
+      "抽雄期",
+      "开花期"
+    ],
+    "symptoms": [
+      "心叶和雄穗上聚集大量蚜虫",
+      "吸食汁液造成叶片卷曲黄化",
+      "分泌蜜露引发煤污病",
+      "传播玉米矮花叶病毒"
+    ],
+    "favorable_conditions": [
+      "旬平均气温 23-25℃、旬降水量低于 20 毫米的高温干旱年份易猖獗危害",
+      "开花授粉期是蚜虫繁殖为害最有利时期"
+    ],
+    "occurrence_conditions": [
+      "干旱少雨年份发生重",
+      "气温 20-28℃ 适宜繁殖",
+      "天敌（瓢虫、草蛉）数量少"
+    ],
+    "risk_factors": [
+      "田间地头杂草较多的地块偏重发生"
+    ],
+    "diagnosis_features": [
+      "蚜虫体小，绿色或褐色",
+      "有翅蚜和无翅蚜共存",
+      "心叶、雄穗上可见虫体和蜜露"
+    ],
+    "prevention": [
+      "保护瓢虫、草蛉、食蚜蝇等天敌",
+      "黄板诱杀有翅蚜",
+      "合理施肥，避免植株过嫩",
+      "及时清除田间地头杂草，减少虫源"
+    ],
+    "control_measures": [
+      "心叶期有蚜株率达 50%、百株蚜量达 3000 头以上时喷雾防治",
+      "抽雄前蚜虫始盛期及时用药，重点喷心叶"
+    ],
+    "chemical_control": [
+      "吡虫啉",
+      "啶虫脒",
+      "噻虫嗪",
+      "功夫菊酯"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "region": [
+      "吉林",
+      "北方玉米产区"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "吡虫啉",
+        "啶虫脒",
+        "噻虫嗪",
+        "功夫菊酯"
+      ],
+      "dosage": "10% 吡虫啉可湿性粉剂 2000 倍液",
+      "application_timing": "蚜虫点片发生时喷雾，重点喷心叶",
+      "safety_interval": "安全间隔期 7 天"
+    },
+    "risk_level": "中",
+    "source": "中国农业科学院科技服务网（作者：吉林通化县大泉源乡农业技术服务站 张玉国）",
+    "source_title": "怎样防治玉米蚜虫",
+    "source_date": "2016-04-05",
+    "source_url": "http://cast.caas.cn/kj/syjs/zwbhjs/269218.html",
+    "source_status": "verified"
+  },
+  {
+    "id": "KB-MAIZE-05",
+    "crop": "玉米",
+    "category": "pest",
+    "risk_level": "中",
+    "disease": "玉米螟",
+    "aliases": [
+      "亚洲玉米螟",
+      "钻心虫",
+      "螟虫"
+    ],
+    "growth_stage": [
+      "心叶末期"
+    ],
+    "symptoms": [
+      "被害心叶展开后即呈现典型危害状——整齐的横排小孔",
+      "四龄后多钻入茎秆危害",
+      "穗期可危害籽粒"
+    ],
+    "favorable_conditions": [],
+    "occurrence_conditions": [],
+    "risk_factors": [
+      "秸秆存留越冬虫源基数高"
+    ],
+    "diagnosis_features": [
+      "幼虫头黑褐色，体色浅褐至深褐色，背部有毛瘤",
+      "蛀孔口常堆有大量粪屑",
+      "初孵幼虫可吐丝下垂借风力转株危害"
+    ],
+    "prevention": [
+      "秸秆粉碎还田，减少虫源基数",
+      "越冬代成虫羽化期使用杀虫灯结合性诱剂诱杀",
+      "成虫产卵初期释放赤眼蜂灭卵",
+      "心叶末期为施药防治关键期（应急措施见 control_measures）"
+    ],
+    "control_measures": [
+      "心叶末期选用生物农药或杀虫剂集中施药防治"
+    ],
+    "chemical_control": [
+      "苏云金杆菌",
+      "白僵菌",
+      "四氯虫酰胺",
+      "氯虫苯甲酰胺",
+      "高效氯氟氰菊酯",
+      "甲氨基阿维菌素苯甲酸盐"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "北方春播玉米区",
+      "黄淮海夏播玉米区",
+      "西北玉米区",
+      "北方大田"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "苏云金杆菌",
+        "白僵菌",
+        "四氯虫酰胺",
+        "氯虫苯甲酰胺",
+        "高效氯氟氰菊酯",
+        "甲氨基阿维菌素苯甲酸盐"
+      ],
+      "dosage": "",
+      "application_timing": "心叶末期选用生物农药或杀虫剂集中施药防治",
+      "safety_interval": ""
+    },
+    "source": "全国农业技术推广服务中心",
+    "source_title": "2020年玉米重大病虫害防控技术方案（农技植保〔2020〕40号印发）",
+    "source_date": "2020-03-23",
+    "source_url": "https://www.natesc.org.cn/News/des?CategoryId=cb2a3d19-a7bd-4aa0-8f4e-4fdda4842057&id=f74b3b2a-5d36-4008-900e-9610894a2a9f",
+    "source_status": "verified"
+  },
+  {
+    "id": "KB-MAIZE-06",
+    "crop": "玉米",
+    "category": "pest",
+    "risk_level": "高",
+    "disease": "粘虫",
+    "aliases": [
+      "黏虫"
+    ],
+    "growth_stage": [],
+    "symptoms": [
+      "幼虫聚集、点片危害",
+      "低龄幼虫3龄后进入暴食期，大量取食叶片"
+    ],
+    "favorable_conditions": [],
+    "occurrence_conditions": [],
+    "risk_factors": [
+      "幼虫3龄后暴食，短时间内可造成严重损失"
+    ],
+    "diagnosis_features": [
+      "幼虫头部有八字形黑纹",
+      "低龄幼虫啃食叶肉，高龄幼虫蚕食叶片成缺刻",
+      "虫量大时暴食成灾，叶片仅剩主脉"
+    ],
+    "prevention": [
+      "成虫期集中连片设置性诱捕器、糖醋盆或食诱剂诱杀",
+      "成虫发生期，集中连片使用杀虫灯",
+      "及时清除田边杂草"
+    ],
+    "control_measures": [
+      "玉米田虫口达5头/株时即应防治",
+      "抓住幼虫3龄暴食前关键期用药，重发区实行统防统治"
+    ],
+    "chemical_control": [
+      "苏云金杆菌",
+      "球孢白僵菌",
+      "氯虫苯甲酰胺"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "黑龙江",
+      "东北春玉米区"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "苏云金杆菌",
+        "球孢白僵菌",
+        "氯虫苯甲酰胺"
+      ],
+      "dosage": "",
+      "application_timing": "玉米田虫口达5头/株时即应防治；抓住幼虫3龄暴食前关键期用药",
+      "safety_interval": ""
+    },
+    "source": "黑龙江省农业农村厅（黑龙江省植检植保站）",
+    "source_title": "三代粘虫发生趋势预报",
+    "source_date": "2026-07-30",
+    "source_url": "http://nynct.hlj.gov.cn/nynct/c115393/202607/c00_31963269.shtml",
+    "source_status": "verified"
+  },
+  {
+    "id": "KB-MAIZE-07",
+    "crop": "玉米",
+    "category": "disease",
+    "risk_level": "高",
+    "disease": "玉米丝黑穗病",
+    "aliases": [
+      "丝黑穗病",
+      "黑穗病",
+      "乌米"
+    ],
+    "growth_stage": [
+      "播种出苗期"
+    ],
+    "symptoms": [
+      "苗期病株丛生、明显矮化",
+      "心叶卷曲呈鞭状",
+      "成株期果穗变成黑褐色粉包"
+    ],
+    "favorable_conditions": [
+      "土壤冷凉干旱",
+      "播种过深、出苗缓慢",
+      "连作地块"
+    ],
+    "occurrence_conditions": [
+      "土壤冷凉干旱",
+      "播种过深、出苗缓慢",
+      "连作地块"
+    ],
+    "risk_factors": [
+      "典型土传系统侵染病害，土壤带菌基数高",
+      "种子破口至幼芽1-2厘米为关键侵染期"
+    ],
+    "diagnosis_features": [
+      "苗期侵染、抽穗期显症",
+      "果穗黑粉包为典型识别特征"
+    ],
+    "prevention": [
+      "选用抗病品种",
+      "重病地与非玉米、高粱作物轮作3年以上",
+      "三唑类药剂拌种或种衣剂包衣"
+    ],
+    "control_measures": [
+      "显症后于黑粉散落前整株拔除病株，带出田外掩埋"
+    ],
+    "chemical_control": [
+      "三唑醇",
+      "三唑酮",
+      "戊唑醇"
+    ],
+    "safety_notes": [
+      "具体拌种药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "北方春玉米区",
+      "东北",
+      "西北",
+      "北方大田"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "三唑醇",
+        "三唑酮",
+        "戊唑醇"
+      ],
+      "dosage": "",
+      "application_timing": "三唑类药剂拌种或种衣剂包衣",
+      "safety_interval": ""
+    },
+    "source": "中国农业信息网（农业农村部信息中心）",
+    "source_title": "玉米丝黑穗病的发生与防治",
+    "source_date": "2018-06-07",
+    "source_url": "https://agri.nais.net.cn/resourcenavigation/webinfo/2cf460fa-739d-40c4-a39d-7e4d23f61bd6.html",
+    "source_status": "verified"
+  }
+]

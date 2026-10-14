@@ -1,0 +1,139 @@
+[
+  {
+    "id": "KB-SOY-01",
+    "crop": "大豆",
+    "category": "disease",
+    "risk_level": "中",
+    "disease": "大豆根腐病",
+    "aliases": [
+      "根腐病",
+      "苗期根腐病"
+    ],
+    "growth_stage": [
+      "苗期",
+      "成株期"
+    ],
+    "symptoms": [
+      "幼苗期茎基部腐烂、根部变褐",
+      "真叶期茎基部出现水浸状病斑，叶片黄化萎蔫，主根深褐色、侧根腐烂",
+      "成株期叶片褪绿萎蔫，皮层及维管束变褐"
+    ],
+    "favorable_conditions": [
+      "连作地块菌源积累",
+      "土壤粘重板结",
+      "低温或高温、水涝等逆境条件"
+    ],
+    "occurrence_conditions": [
+      "连作地块菌源积累",
+      "土壤粘重板结",
+      "低温或高温、水涝等逆境条件"
+    ],
+    "risk_factors": [
+      "镰刀菌、大豆疫霉、立枯丝核菌、腐霉等多病原复合侵染",
+      "连作加重发生"
+    ],
+    "diagnosis_features": [
+      "多病原复合侵染，根部及茎基部变褐腐烂"
+    ],
+    "prevention": [
+      "与禾本科作物轮作3年以上",
+      "选用抗耐病品种",
+      "合理密植",
+      "雨后及时排湿、中耕散墒",
+      "种子包衣处理"
+    ],
+    "control_measures": [],
+    "chemical_control": [
+      "多福克悬浮种衣剂",
+      "精甲霜灵·咯菌腈种衣剂"
+    ],
+    "safety_notes": [
+      "具体种衣剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "东北",
+      "黄淮海",
+      "全国"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "多福克悬浮种衣剂",
+        "精甲霜灵·咯菌腈种衣剂"
+      ],
+      "dosage": "",
+      "application_timing": "种子包衣处理",
+      "safety_interval": ""
+    },
+    "source": "全国农业技术推广服务中心（国家大豆产业技术体系培训课件，主讲：吉林农业大学 史树森）",
+    "source_title": "大豆种子处理及苗期病虫草害防控技术",
+    "source_date": "2022-04-11",
+    "source_url": "https://www.natesc.org.cn/admin/UploadFile/dataDoload/202204120920511718.pdf",
+    "source_status": "verified"
+  },
+  {
+    "id": "KB-SOY-02",
+    "crop": "大豆",
+    "category": "pest",
+    "risk_level": "低",
+    "disease": "大豆根潜蝇",
+    "aliases": [
+      "大豆根蛆"
+    ],
+    "growth_stage": [
+      "苗期"
+    ],
+    "symptoms": [
+      "幼虫蛀食大豆根皮，形成破肚、肿瘤和腐烂斑",
+      "仅危害栽培大豆和野生大豆"
+    ],
+    "favorable_conditions": [
+      "越冬蛹5月中下旬至6月羽化产卵，与大豆苗期相遇"
+    ],
+    "occurrence_conditions": [
+      "越冬蛹5月中下旬至6月羽化产卵，与大豆苗期相遇"
+    ],
+    "risk_factors": [
+      "一年发生1代，以蛹在土中越冬",
+      "连作地块虫源积累"
+    ],
+    "diagnosis_features": [
+      "根皮被蛀成破肚、肿瘤状为典型特征"
+    ],
+    "prevention": [
+      "与禾本科作物轮作3年以上",
+      "秋季深翻",
+      "适期早播、增施磷钾肥",
+      "种衣剂包衣或药剂拌种"
+    ],
+    "control_measures": [
+      "成虫盛发期及时喷雾防治"
+    ],
+    "chemical_control": [
+      "多克福种衣剂",
+      "辛硫磷"
+    ],
+    "safety_notes": [
+      "用药前核对最新农药登记信息与禁限用农药规定"
+    ],
+    "keywords": [],
+    "region": [
+      "内蒙古",
+      "北方春大豆区"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "多克福种衣剂",
+        "辛硫磷"
+      ],
+      "dosage": "",
+      "application_timing": "种衣剂包衣或药剂拌种；成虫盛发期及时喷雾防治",
+      "safety_interval": ""
+    },
+    "source": "包头市农牧局",
+    "source_title": "大豆根潜蝇的防治措施",
+    "source_date": "2026-02-24",
+    "source_url": "http://nmj.baotou.gov.cn/nmykj/202602/t20260224_800524.html",
+    "source_status": "verified"
+  }
+]

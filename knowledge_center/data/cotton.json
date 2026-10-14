@@ -1,0 +1,151 @@
+[
+  {
+    "id": "KB-COT-01",
+    "crop": "棉花",
+    "category": "pest",
+    "risk_level": "中",
+    "disease": "棉蚜",
+    "aliases": [
+      "腻虫",
+      "蜜虫"
+    ],
+    "growth_stage": [
+      "苗期",
+      "蕾铃期"
+    ],
+    "symptoms": [
+      "苗蚜危害导致叶片卷叶、皱缩",
+      "伏蚜发生时叶片出现油光（蜜露污染）"
+    ],
+    "favorable_conditions": [
+      "高温干旱利于种群增殖",
+      "伏蚜快速攀升期在6月下旬至7月上旬"
+    ],
+    "occurrence_conditions": [
+      "高温干旱利于种群增殖",
+      "伏蚜快速攀升期在6月下旬至7月上旬"
+    ],
+    "risk_factors": [],
+    "diagnosis_features": [
+      "卷叶、皱缩、油光为典型症状"
+    ],
+    "prevention": [
+      "保护利用瓢虫、草蛉、食蚜蝇等自然天敌",
+      "田边保留苦豆子、甘草、骆驼刺等天敌保育植物"
+    ],
+    "control_measures": [
+      "达标后全田防控：单株上中下3叶蚜量平均200-300头",
+      "药剂交替使用"
+    ],
+    "chemical_control": [
+      "双丙环虫酯",
+      "氟啶虫胺腈",
+      "氟啶虫酰胺·烯啶虫胺",
+      "溴氰虫酰胺"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "新疆",
+      "西北内陆棉区"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "双丙环虫酯",
+        "氟啶虫胺腈",
+        "氟啶虫酰胺·烯啶虫胺",
+        "溴氰虫酰胺"
+      ],
+      "dosage": "",
+      "application_timing": "达标后全田防控：单株上中下3叶蚜量平均200-300头",
+      "safety_interval": ""
+    },
+    "source": "全国农业技术推广服务中心（病虫害测报处）",
+    "source_title": "新疆棉蚜发生动态及趋势预测",
+    "source_date": "2026-06-25",
+    "source_url": "https://www.natesc.org.cn/News/des?kind=&id=01469ecb-18ed-41f4-bc6b-0b8a6367164c&CategoryId=11a63552-05c9-475e-a504-0392e64ead0b",
+    "source_status": "verified"
+  },
+  {
+    "id": "KB-COT-02",
+    "crop": "棉花",
+    "category": "pest",
+    "risk_level": "中",
+    "disease": "棉铃虫",
+    "aliases": [
+      "棉铃实夜蛾"
+    ],
+    "growth_stage": [
+      "蕾铃期"
+    ],
+    "symptoms": [
+      "幼虫蛀食蕾、花、铃"
+    ],
+    "favorable_conditions": [
+      "高温干旱利于繁殖",
+      "西北内陆棉区7月为1-2代同期发生"
+    ],
+    "occurrence_conditions": [
+      "高温干旱利于繁殖",
+      "西北内陆棉区7月为1-2代同期发生"
+    ],
+    "risk_factors": [],
+    "diagnosis_features": [
+      "幼虫蛀食花蕾、青铃，蕾铃脱落或腐烂",
+      "幼虫体色多变，头部黄褐色",
+      "受害蕾铃上有蛀孔并排出虫粪"
+    ],
+    "prevention": [
+      "棉铃虫常发区棉花套种玉米，地边种植苘麻条带，诱集棉铃虫成虫产卵，集中杀灭",
+      "棉铃虫成虫始盛期人工释放卵寄生蜂螟黄赤眼蜂或松毛虫赤眼蜂",
+      "棉铃虫越冬代成虫始见期至末代成虫末期，棉田和周边寄主作物田连片使用棉铃虫性诱剂"
+    ],
+    "control_measures": [
+      "达到防治指标时用药：转Bt基因棉百株低龄幼虫超10头，非Bt棉百株累计卵量达100粒",
+      "重点喷施顶心及果枝顶尖",
+      "优先使用微生物农药，化学药剂轮换使用",
+      "宜在早晚用药"
+    ],
+    "chemical_control": [
+      "棉铃虫核型多角体病毒",
+      "甘蓝夜蛾核型多角体病毒",
+      "短稳杆菌",
+      "苏云金杆菌",
+      "甲氨基阿维菌素苯甲酸盐",
+      "氯虫苯甲酰胺",
+      "氟铃脲",
+      "茚虫威"
+    ],
+    "safety_notes": [
+      "转Bt基因棉田禁用苏云金杆菌（Bt）制剂"
+    ],
+    "keywords": [],
+    "region": [
+      "全国",
+      "西北内陆棉区",
+      "黄河流域棉区"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "棉铃虫核型多角体病毒",
+        "甘蓝夜蛾核型多角体病毒",
+        "短稳杆菌",
+        "苏云金杆菌",
+        "甲氨基阿维菌素苯甲酸盐",
+        "氯虫苯甲酰胺",
+        "氟铃脲",
+        "茚虫威"
+      ],
+      "dosage": "",
+      "application_timing": "达到防治指标时用药：转Bt基因棉百株低龄幼虫超10头，非Bt棉百株累计卵量达100粒",
+      "safety_interval": ""
+    },
+    "source": "全国农业技术推广服务中心",
+    "source_title": "全国农技中心关于印发水稻等农作物重大病虫害防控技术方案的通知（含2021年棉花重大病虫害防控技术方案）",
+    "source_date": "2021-03-11",
+    "source_url": "https://www.natesc.org.cn/news/des?id=7dcb01d3-37fc-4157-8c2e-fa13e4412ed0&kind=TZGG&Category=%E9%80%9A%E7%9F%A5%E5%85%AC%E5%91%8A&CategoryId=d00be10c-6b4f-478b-be40-39fab99f9710",
+    "source_status": "verified"
+  }
+]

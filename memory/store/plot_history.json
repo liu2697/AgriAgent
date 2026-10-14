@@ -1,0 +1,228 @@
+{
+  "河北石家庄·栾城区·示范田::玉米::120.0亩": [
+    {
+      "timestamp": "2026-04-11T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "播种期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n播前整地阶段，田间未发现明显病斑。土壤墒情良好。\n\n综合风险等级：无",
+      "recommendation_summary": "建议深翻灭茬，减少田间菌源；播前使用种衣剂处理。",
+      "risk_level": "无",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-05-16T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "苗期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n苗期调查发现零星病斑，主要在下部老叶。\n\n综合风险等级：低",
+      "recommendation_summary": "建议及时清除病株残体，加强通风透光，田间湿度控制在 60% 以下。",
+      "risk_level": "低",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-06-20T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "拔节期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n拔节期病斑明显增多，部分植株叶片出现长梭形褐色病斑，数量约 20 株/百株。\n\n综合风险等级：中",
+      "recommendation_summary": "推荐使用 25% 吡唑醚菌酯 30ml/亩 兑水叶面喷雾，间隔 7-10 天连喷 2 次。",
+      "risk_level": "中",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-07-25T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "抽雄期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n抽雄期病斑大面积扩散，上部功能叶受害严重，部分田块病株率达 60%，疑似大斑病暴发。\n\n综合风险等级：高",
+      "recommendation_summary": "紧急防治：使用 30% 苯醚甲环唑·丙环唑悬浮剂 40ml/亩 + 25% 吡唑醚菌酯 30ml/亩，混合喷雾。同时建议清理重病株集中深埋。注意安全间隔期不少于 21 天。",
+      "risk_level": "高",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-08-29T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "灌浆期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n灌浆期复查，经过前期防治，病斑扩展速度减缓，但仍有部分植株下部叶片感病。\n\n综合风险等级：中",
+      "recommendation_summary": "可补充喷施 40% 氟硅唑 10ml/亩，保护剩余功能叶；避免大水漫灌，雨后及时排水。",
+      "risk_level": "中",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-09-21T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "灌浆期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n当前病情平稳，病斑扩展已基本停止，对产量影响可控。\n\n综合风险等级：低",
+      "recommendation_summary": "建议做好后期田间管理，适时收获；秸秆集中处理，减少来年菌源。",
+      "risk_level": "低",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-10-03T09:00:00",
+      "crop": "玉米",
+      "growth_stage": "成熟期",
+      "area": 120.0,
+      "location": "河北石家庄·栾城区·示范田",
+      "diagnosis_summary": "# 玉米玉米大斑病诊断\n\n成熟期调查，病株率已控制在 10% 以下，功能叶保持率良好。\n\n综合风险等级：无",
+      "recommendation_summary": "近期天气晴好，可适时收获；收获后秸秆深翻还田或集中处理。",
+      "risk_level": "无",
+      "note": "DEMO_DATA"
+    }
+  ],
+  "内蒙古赤峰·松山区·基地::马铃薯::80.0亩": [
+    {
+      "timestamp": "2026-05-01T09:00:00",
+      "crop": "马铃薯",
+      "growth_stage": "播种期",
+      "area": 80.0,
+      "location": "内蒙古赤峰·松山区·基地",
+      "diagnosis_summary": "# 马铃薯马铃薯晚疫病诊断\n\n播种前期，土壤墒情良好，未发现病害迹象。\n\n综合风险等级：无",
+      "recommendation_summary": "建议选用脱毒种薯，播前进行晾晒；实行轮作倒茬，避免连作。",
+      "risk_level": "无",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-06-05T09:00:00",
+      "crop": "马铃薯",
+      "growth_stage": "苗期",
+      "area": 80.0,
+      "location": "内蒙古赤峰·松山区·基地",
+      "diagnosis_summary": "# 马铃薯马铃薯晚疫病诊断\n\n苗期植株生长整齐，病害未见发生。\n\n综合风险等级：无",
+      "recommendation_summary": "保持田间排水通畅，避免积水；合理密植，保证通风。",
+      "risk_level": "无",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-07-10T09:00:00",
+      "crop": "马铃薯",
+      "growth_stage": "现蕾期",
+      "area": 80.0,
+      "location": "内蒙古赤峰·松山区·基地",
+      "diagnosis_summary": "# 马铃薯马铃薯晚疫病诊断\n\n现蕾期调查，部分植株叶片出现水渍状暗绿色病斑，阴雨后扩展迅速，疑似晚疫病早期症状。\n\n综合风险等级：中",
+      "recommendation_summary": "推荐使用 58% 甲霜灵·锰锌可湿性粉剂 150g/亩 兑水喷雾，重点喷施叶片背面。间隔 7 天连喷 2 次。",
+      "risk_level": "中",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-08-14T09:00:00",
+      "crop": "马铃薯",
+      "growth_stage": "开花期",
+      "area": 80.0,
+      "location": "内蒙古赤峰·松山区·基地",
+      "diagnosis_summary": "# 马铃薯马铃薯晚疫病诊断\n\n近期连续阴雨 5 天，田间湿度持续偏高，晚疫病大面积暴发，病株率达 75%，部分植株整株枯死。\n\n综合风险等级：高",
+      "recommendation_summary": "紧急处置：1) 发病中心地块喷施 68% 精甲霜·锰锌水分散粒剂 120g/亩；2) 及时清除重病株并集中深埋；3) 增施磷钾肥增强植株抗性；4) 雨后必喷药。注意药剂轮换，避免抗性产生。",
+      "risk_level": "高",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-09-13T09:00:00",
+      "crop": "马铃薯",
+      "growth_stage": "结薯期",
+      "area": 80.0,
+      "location": "内蒙古赤峰·松山区·基地",
+      "diagnosis_summary": "# 马铃薯马铃薯晚疫病诊断\n\n经过防治后病情得到控制，仍有部分下部叶片病斑，上部新叶生长正常。\n\n综合风险等级：中",
+      "recommendation_summary": "继续保护功能叶，使用 72% 霜脲氰·锰锌 100g/亩；控制田间湿度，注意排水。",
+      "risk_level": "中",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-10-03T09:00:00",
+      "crop": "马铃薯",
+      "growth_stage": "收获期",
+      "area": 80.0,
+      "location": "内蒙古赤峰·松山区·基地",
+      "diagnosis_summary": "# 马铃薯马铃薯晚疫病诊断\n\n收获前调查，病株率降至 15% 以下，块茎发育正常。\n\n综合风险等级：低",
+      "recommendation_summary": "近期天气晴好，可适时收获；收获前 10 天割秧晒田，减少薯块带菌。",
+      "risk_level": "低",
+      "note": "DEMO_DATA"
+    }
+  ],
+  "山东潍坊·寿光·生产基地::小麦::200.0亩": [
+    {
+      "timestamp": "2026-04-06T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "播种期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n播种前期，田间菌源基数较低。\n\n综合风险等级：无",
+      "recommendation_summary": "建议选用抗锈品种，合理密植；增施有机肥，提高植株抗性。",
+      "risk_level": "无",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-05-06T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "冬前苗期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n冬前调查发现极少量病斑，主要在东南向田块。\n\n综合风险等级：低",
+      "recommendation_summary": "建议对发病中心进行挑治，使用 15% 三唑酮可湿性粉剂 80g/亩。",
+      "risk_level": "低",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-06-10T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "返青期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n返青后气温回升，条锈病明显扩展，病株率 25%，叶片上覆大量黄色粉状孢子堆。\n\n综合风险等级：中",
+      "recommendation_summary": "建议普治一次，使用 15% 三唑酮可湿性粉剂 80g/亩 + 25% 氰烯菌酯 200ml/亩，混合喷雾。间隔 10 天。",
+      "risk_level": "中",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-07-17T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "拔节期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n拔节期病情加重，病株率达 70%，主要危害上部功能叶，严重田块叶片提前枯死，严重影响光合作用。\n\n综合风险等级：高",
+      "recommendation_summary": "紧急防治：使用 25% 戊唑醇可湿性粉剂 30g/亩 + 25% 氰烯菌酯 250ml/亩 + 99% 磷酸二氢钾 200g/亩叶面喷施。7 天后第二次用药。重病田可适当加量。同时增施叶面肥促进籽粒灌浆。",
+      "risk_level": "高",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-08-22T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "灌浆期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n灌浆期病情仍较重，上部功能叶受害严重，但经过前期防治后扩展速度有所减缓。\n\n综合风险等级：中",
+      "recommendation_summary": "重点保护旗叶和倒二叶，使用 43% 戊唑醇悬浮剂 25ml/亩 + 磷酸二氢钾 200g/亩，叶面喷施一次。避免高温时段作业。",
+      "risk_level": "中",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-09-18T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "灌浆后期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n灌浆后期调查，病斑基本停止扩展，籽粒灌浆接近完成。\n\n综合风险等级：低",
+      "recommendation_summary": "近期天气晴好，避免再喷药；适时收获，注意抢晴晾晒。",
+      "risk_level": "低",
+      "note": "DEMO_DATA"
+    },
+    {
+      "timestamp": "2026-10-03T09:00:00",
+      "crop": "小麦",
+      "growth_stage": "成熟期",
+      "area": 200.0,
+      "location": "山东潍坊·寿光·生产基地",
+      "diagnosis_summary": "# 小麦小麦条锈病诊断\n\n成熟期调查，整体病情可控，预计亩产 950-1050 斤，较常年略有下降但总体稳产。\n\n综合风险等级：无",
+      "recommendation_summary": "近期适时收获；麦茬深翻处理，减少夏播病害风险。",
+      "risk_level": "无",
+      "note": "DEMO_DATA"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+[
+  {
+    "id": "KB-PEA-01",
+    "crop": "花生",
+    "category": "disease",
+    "risk_level": "中",
+    "disease": "花生叶斑病",
+    "aliases": [
+      "花生褐斑病",
+      "花生黑斑病"
+    ],
+    "growth_stage": [],
+    "symptoms": [
+      "主要为害叶片，病斑圆形、可融合成不规则大斑",
+      "分褐斑型与黑斑型",
+      "叶柄、茎、花轴亦可染病"
+    ],
+    "favorable_conditions": [
+      "高温高湿"
+    ],
+    "occurrence_conditions": [
+      "高温高湿"
+    ],
+    "risk_factors": [
+      "病菌以菌丝在土壤病残体上越冬，分生孢子借风雨传播再侵染",
+      "流行年份减产5%-15%，严重时超过30%"
+    ],
+    "diagnosis_features": [
+      "褐斑型与黑斑型病斑可作田间区分"
+    ],
+    "prevention": [
+      "合理轮作",
+      "雨后及时排水"
+    ],
+    "control_measures": [
+      "病叶率约20%时开始用药",
+      "喷药时保证中下层叶幕着药"
+    ],
+    "chemical_control": [
+      "波尔多液",
+      "代森类",
+      "甲基硫菌灵",
+      "多菌灵",
+      "百菌清",
+      "戊唑醇",
+      "烯唑醇",
+      "嘧菌酯",
+      "吡唑醚菌酯",
+      "氟唑菌酰羟胺"
+    ],
+    "safety_notes": [
+      "具体药剂与用量以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "山东",
+      "黄淮海花生产区",
+      "北方大田"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "波尔多液",
+        "代森类",
+        "甲基硫菌灵",
+        "多菌灵",
+        "百菌清",
+        "戊唑醇",
+        "烯唑醇",
+        "嘧菌酯",
+        "吡唑醚菌酯",
+        "氟唑菌酰羟胺"
+      ],
+      "dosage": "",
+      "application_timing": "病叶率约20%时开始用药",
+      "safety_interval": ""
+    },
+    "source": "烟台市蓬莱区农业农村局（病虫情报2025年第9期）",
+    "source_title": "注意防治花生叶斑病",
+    "source_date": "2025-08-06",
+    "source_url": "https://www.penglai.gov.cn/module/download/downfile.jsp?classid=0&filename=cd5207541278493ab222fbd698cd6043.pdf&showname=%E7%97%85%E8%99%AB%E6%83%85%E6%8A%A52025%E5%B9%B4%E7%AC%AC9%E6%9C%9F.pdf",
+    "source_status": "verified"
+  },
+  {
+    "id": "KB-PEA-02",
+    "crop": "花生",
+    "category": "pest",
+    "risk_level": "中",
+    "disease": "花生田蛴螬",
+    "aliases": [
+      "蛴螬",
+      "地蚕"
+    ],
+    "growth_stage": [],
+    "symptoms": [
+      "金龟子幼虫（蛴螬）蛀食花生荚果"
+    ],
+    "favorable_conditions": [],
+    "occurrence_conditions": [],
+    "risk_factors": [
+      "虫口基数大（防治指标约2000头/亩）"
+    ],
+    "diagnosis_features": [
+      "幼虫体白色肥大，弯曲呈 C 形",
+      "咬食花生根与荚果",
+      "受害植株叶片发黄萎蔫"
+    ],
+    "prevention": [
+      "深耕细耙，破坏幼虫生存环境",
+      "田边种植蓖麻诱集成虫",
+      "施用充分腐熟的有机肥",
+      "傍晚人工捕捉成虫，频振灯诱杀",
+      "应用绿僵菌、白僵菌、苏云金芽孢杆菌、昆虫病原线虫等生物措施"
+    ],
+    "control_measures": [
+      "虫口达2000头/亩或苗期被害株率3%时开展化学防治"
+    ],
+    "chemical_control": [
+      "辛硫磷微囊悬浮剂",
+      "吡虫啉"
+    ],
+    "safety_notes": [
+      "具体用量与施用方式以农药登记信息和当地植保部门发布为准"
+    ],
+    "keywords": [],
+    "region": [
+      "河北",
+      "黄淮海花生产区",
+      "北方大田"
+    ],
+    "pesticide_reference": {
+      "registered": [
+        "辛硫磷微囊悬浮剂",
+        "吡虫啉"
+      ],
+      "dosage": "",
+      "application_timing": "虫口达2000头/亩或苗期被害株率3%时开展化学防治",
+      "safety_interval": ""
+    },
+    "source": "沧州市市场监督管理局（沧州市地方标准DB1309/T 215—2018，沧州市农林科学院起草）",
+    "source_title": "花生田蛴螬综合防控技术规程",
+    "source_date": "2018-11-30",
+    "source_url": "https://scjgj.cangzhou.gov.cn/scjd/c123960/202310/fc7c6c6fca1c4e5496a3be35c1865b3d/files/45277085eda94054a1fd06f12c545715.pdf",
+    "source_status": "verified"
+  }
+]

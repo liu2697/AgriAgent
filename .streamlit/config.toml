@@ -1,0 +1,7 @@
+[server]
+headless = true
+# 单次上传图片上限（MB）
+maxUploadSize = 20
+
+[browser]
+gatherUsageStats = false
