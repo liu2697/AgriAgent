@@ -205,4 +205,9 @@ python tests/test_knowledge.py    # 知识库检索与打分回归
 python tests/test_registration.py # 农药登记核验 / 事前白名单 / 事后剔除
 python tests/test_pages.py        # 页面渲染（Streamlit AppTest）
 python tests/test_farmer_flow.py  # 农户端链路冒烟：章节提取 / 行动步骤 / 检索闸门
+python tests/test_mock_notice.py  # 无密钥/调用失败时必须明确提示（不得伪装成大模型输出）
 ```
+
+> 前 4 个模块共 105 个用例；`test_mock_notice.py` 另含 14 个用例（合计 119）。
+> 说明：`test_mock_notice.py` 断言"未配置密钥或接口不可用"时，诊断/建议/生产计划的正文
+> 必须出现提示，且报告不得声称"已结合视觉分析结果"（示例模式下图片并未参与分析）。

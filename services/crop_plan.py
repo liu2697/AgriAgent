@@ -69,6 +69,9 @@ def _mock_plan(crop: str, growth_stage: str, area: float,
     spray_recent = any(lg.get("type") == "打药" for lg in recent_logs)
 
     lines = [
+        "⚠️ 当前未配置 AI 服务密钥，以下为规则模板生成的示例计划（仅演示）；"
+        "配置密钥后，本方案将由大模型结合地块档案生成。",
+        "",
         f"# {crop} · 未来 30 天农事计划",
         "",
         f"> 生成时间　{now_cn():%Y-%m-%d %H:%M}　生育阶段　{growth_stage}　"

@@ -232,6 +232,7 @@ def render(plot_key: str) -> None:
                 title=f"{location or '未命名地块'} 地块长期管理建议（{crop}）",
                 file_base=f"农智链AgriAgent_长期管理建议_{location or '未命名地块'}_{crop}",
                 key_prefix="advice",
+                source=advice.get("source", ""),
             )
         else:
             st.error(advice.get("content", "生成失败"))
@@ -264,6 +265,7 @@ def render(plot_key: str) -> None:
                 title=f"{crop} 地块未来 30 天农事计划（{area} 亩）",
                 file_base=f"农智链AgriAgent_生产计划_{location or '未命名地块'}_{crop}",
                 key_prefix="plotplan",
+                source=plan.get("source", ""),
             )
         else:
             st.error(plan.get("content", "生成失败"))

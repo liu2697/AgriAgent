@@ -287,6 +287,14 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
     elif safety_unknown:
         st.warning("⚠ 安全审核状态未知：本次安全审核未正常完成，请勿直接采纳处置建议。")
 
+    # ---- 未配置密钥时必须显著提示（避免示例内容被误认为大模型输出）----
+    _src_txt = str(result.get("source", ""))
+    if "示例模式" in _src_txt or "mock" in _src_txt.lower():
+        st.warning(
+            "⚠️ 当前未配置 AI 服务密钥，本报告为**内置示例诊断**（仅用于功能演示），"
+            "并非大模型结合本块地数据的真实诊断结论；配置密钥后即为真实模型输出。"
+        )
+
     # ---- 报告头 ----
     st.markdown(
         f"""

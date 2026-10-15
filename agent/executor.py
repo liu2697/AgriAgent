@@ -17,6 +17,22 @@ from knowledge_center.registration import (
 )
 from services.ai_service import diagnose as llm_diagnose
 
+MOCK_SOURCE = "mock"
+
+
+def source_label(src: str) -> str:
+    """对外展示的来源文案。
+
+    原则：**调不到大模型时必须写明**，不能让人误以为内容是大模型输出。
+    """
+    s = (src or "").strip()
+    low = s.lower()
+    if low == MOCK_SOURCE:
+        return "农智链 AgriAgent · 示例模式（未配置 AI 服务密钥）"
+    if low == "error":
+        return "农智链 AgriAgent · 调用失败"
+    return f"农智链 AgriAgent · {s}".strip() if s else "农智链 AgriAgent"
+
 
 class Executor:
     """
@@ -153,7 +169,7 @@ class Executor:
         return {
             "success": llm_result.get("success", False),
             "content": final_content,
-            "source": f"农智链 AgriAgent · {llm_result.get('source', '')}".strip(),
+            "source": source_label(llm_result.get("source", "")),
             "plan": [s.to_dict() for s in plan.steps],
             "knowledge": knowledge_hits,
             "vision": vision_result,
@@ -212,14 +228,27 @@ class Executor:
                 symptoms="",
                 vision_only=True,
             )
-            step.detail = f"视觉分析完成 · 来源：{result.get('source', 'unknown')}"
-            step.status = "done" if result.get("success") else "failed"
-            ws["vision_result"] = {
-                "enabled": True,
-                "success": result.get("success", False),
-                "content": result.get("content", "")[:800],
-                "source": result.get("source", ""),
-            }
+            src = result.get("source", "unknown")
+            if src == MOCK_SOURCE:
+                # 未配置密钥：图片其实没有被模型看过，必须如实标注，
+                # 否则最终报告会出现"已结合视觉分析结果"这种不实描述。
+                step.detail = "视觉分析未执行 · 示例模式（未配置 AI 服务密钥，图片未参与分析）"
+                step.status = "skipped"
+                ws["vision_result"] = {
+                    "enabled": True,
+                    "success": False,
+                    "content": result.get("content", "")[:800],
+                    "source": src,
+                }
+            else:
+                step.detail = f"视觉分析完成 · 来源：{src}"
+                step.status = "done" if result.get("success") else "failed"
+                ws["vision_result"] = {
+                    "enabled": True,
+                    "success": result.get("success", False),
+                    "content": result.get("content", "")[:800],
+                    "source": src,
+                }
         except Exception as exc:
             step.detail = f"视觉分析异常：{exc}"
             step.status = "failed"
@@ -281,7 +310,9 @@ class Executor:
                 soil_type=ctx["soil_type"], area=ctx["area"],
                 location=ctx["location"], symptoms=augmented,
             )
-            step.detail = f"LLM 来源：{result.get('source', 'unknown')}"
+            _src = result.get("source", "unknown")
+            step.detail = ("LLM 来源：示例模式（未配置 AI 服务密钥，内容为内置示例）"
+                           if _src == MOCK_SOURCE else f"LLM 来源：{_src}")
             if reg.get("candidates"):
                 step.detail += f"；登记核验通过药剂 {len(reg['candidates'])} 个"
             step.status = "done" if result.get("success") else "failed"

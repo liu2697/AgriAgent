@@ -79,6 +79,7 @@ def render() -> None:
                 title=f"{p['crop']} 地块 30 天农事管理方案（{p['area']} 亩）",
                 file_base=f"农智链AgriAgent_30天生产管理方案_{p['crop']}_{p['area']}亩",
                 key_prefix="adminplan",
+                source=plan.get("source", ""),
             )
         else:
             st.error(plan.get("content", "生成失败"))

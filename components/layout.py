@@ -111,8 +111,24 @@ def risk_badge_html(level: str) -> str:
     return f'<span class="ag-badge {cls}">{label}</span>'
 
 
+def plan_source_label(source: str) -> str:
+    """把方案/建议的来源转成用户可读说明。
+
+    关键原则：**调不到大模型时必须说清楚**，不能让人误以为内容是大模型生成的。
+    """
+    s = (source or "").strip()
+    if not s:
+        return "未标注"
+    low = s.lower()
+    if low == "mock":
+        return "示例模式 · 未配置 AI 服务密钥（内容由规则模板生成，非大模型输出）"
+    if low == "error":
+        return "调用失败（未生成大模型内容）"
+    return f"大模型生成（{s}）"
+
+
 def render_plan_block(content: str, *, title: str, file_base: str,
-                      key_prefix: str, heading: str = "") -> None:
+                      key_prefix: str, heading: str = "", source: str = "") -> None:
     """渲染生产/管理方案：结构化卡片 + PDF / Word / 纯文本三种导出。
 
     为什么要做成共享组件：
@@ -126,12 +142,16 @@ def render_plan_block(content: str, *, title: str, file_base: str,
       file_base   下载文件名前缀（不含扩展名）
       key_prefix  组件内 widget key 前缀（多处分块渲染时必须唯一）
       heading     可选小节标题
+      source      来源标识（"mock" / "error" / 模型名）；传入后在方案下方显式标注来源，
+                  避免"示例内容被误认为大模型输出"
     """
     from components.markdown_helper import plan_html, plan_plain_text
 
     if heading:
         st.markdown(f"##### {heading}")
     st.markdown(plan_html(content), unsafe_allow_html=True)
+    if source:
+        st.caption(f"方案来源：{plan_source_label(source)}")
 
     st.markdown("###### 导出方案")
     c1, c2, c3 = st.columns(3)
