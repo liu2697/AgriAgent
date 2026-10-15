@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Optional
 
 from database import repository as repo
+from timeutil import iso_now, now_cn
 
 
 MEMORY_DIR = Path(os.environ.get("AGENT_MEMORY_DIR", Path(__file__).resolve().parent / "store"))
@@ -57,7 +58,7 @@ def record_visit(location: str, crop: str, growth_stage: str, area: float,
     """将本次诊断结果写入 SQLite（diagnosis_records 表），并同步地块基础信息。"""
     key = _plot_key(location, crop, area)
     entry = {
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "timestamp": iso_now(),
         "crop": crop,
         "growth_stage": growth_stage,
         "area": area,
@@ -215,7 +216,7 @@ def record_task(location: str, crop: str, growth_stage: str, area: float,
     农户提交 AI 诊断结果后创建一条工单（写入 SQLite tasks 表）。
     返回 task_id。
     """
-    task_id = f"tk_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"
+    task_id = f"tk_{now_cn().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"
     plot_key = _plot_key(location, crop, area)
 
     img_path = ""
@@ -233,7 +234,7 @@ def record_task(location: str, crop: str, growth_stage: str, area: float,
         ai_content = ai_result.get("content", "")
         ai_source = ai_result.get("source", "")
 
-    now = datetime.now().isoformat(timespec="seconds")
+    now = iso_now()
     task = {
         "task_id": task_id,
         "plot_key": plot_key,
@@ -302,7 +303,7 @@ def update_task(task_id: str, *, final_diagnosis: Optional[str] = None,
     """农技员编辑工单（改诊断/改建议/加备注/改状态）。"""
     if repo.get_task(task_id) is None:
         return False
-    fields: dict = {"update_time": datetime.now().isoformat(timespec="seconds")}
+    fields: dict = {"update_time": iso_now()}
     if final_diagnosis is not None:
         fields["final_diagnosis"] = final_diagnosis
     if final_recommendation is not None:
@@ -337,7 +338,7 @@ def publish_task(task_id: str) -> bool:
         return False
     if not task.get("final_diagnosis") and not task.get("final_recommendation"):
         return False
-    now = datetime.now().isoformat(timespec="seconds")
+    now = iso_now()
     repo.update_task(task_id, status=STATUS_COMPLETED,
                      publish_time=now, update_time=now)
     return True
@@ -347,7 +348,7 @@ def close_task(task_id: str) -> bool:
     """关闭工单（不再跟踪）。"""
     if repo.get_task(task_id) is None:
         return False
-    now = datetime.now().isoformat(timespec="seconds")
+    now = iso_now()
     repo.update_task(task_id, status=STATUS_CLOSED,
                      close_time=now, update_time=now)
     return True

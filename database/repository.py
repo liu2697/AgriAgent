@@ -12,10 +12,11 @@ from datetime import datetime
 from typing import Optional
 
 from database.connection import db_scope
+from timeutil import iso_now
 
 
 def _now() -> str:
-    return datetime.now().isoformat(timespec="seconds")
+    return iso_now()
 
 
 # ==========================================================================

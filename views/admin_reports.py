@@ -5,6 +5,7 @@ import streamlit as st
 
 from memory import history as memory
 from services import reporting
+from timeutil import now_cn
 
 
 def render() -> None:
@@ -16,7 +17,7 @@ def render() -> None:
         return
 
     md = reporting.build_markdown_report()
-    today = datetime.now().strftime("%Y%m%d")
+    today = now_cn().strftime("%Y%m%d")
 
     c1, c2 = st.columns(2)
     with c1:

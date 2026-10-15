@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from knowledge_center.loader import load_diseases
 from memory import history as memory
+from timeutil import now_cn, today_cn
 
 # 知识库条目（用于从诊断文本中识别病害名称）
 # 数据源与 Agent / RAG 统一：knowledge_center（P2-2，替换旧 knowledge.base）
@@ -107,7 +108,7 @@ def _parse_ts(ts: str) -> datetime:
     try:
         return datetime.fromisoformat(ts)
     except (ValueError, TypeError):
-        return datetime.now()
+        return now_cn()
 
 
 def overview() -> dict:
@@ -134,7 +135,7 @@ def overview() -> dict:
     except Exception:
         farmers = 0
 
-    now = datetime.now()
+    now = now_cn()
     last7 = sum(1 for r in records if (now - _parse_ts(r.get("timestamp", ""))).days < 7)
     last_time = max((r.get("timestamp", "") for r in records), default="")
     return {
@@ -194,7 +195,7 @@ def daily_trend(days: int = 30) -> list[dict]:
         ts = r.get("timestamp", "")
         if ts:
             counter[ts[:10]] += 1
-    today = datetime.now().date()
+    today = today_cn()
     return [
         {
             "日期": (today - timedelta(days=i)).isoformat(),

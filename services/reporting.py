@@ -7,10 +7,11 @@ from datetime import datetime
 from memory import history as memory
 from services import stats
 from components.layout import fmt_cn_time
+from timeutil import now_cn
 
 
 def _fmt_time() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M")
+    return now_cn().strftime("%Y-%m-%d %H:%M")
 
 
 def _md_escape(text: str) -> str:

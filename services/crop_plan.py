@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from config import AI_API_KEY, AI_MODEL, GROWTH_STAGES
 from services import stats
 from services.ai_service import _request_ai
+from timeutil import now_cn, today_cn
 
 # 各生育阶段的基础农事任务（规则模板用）
 _STAGE_TASKS = {
@@ -28,7 +29,7 @@ _STAGE_TASKS = {
 
 def _week_ranges() -> list[tuple[str, str]]:
     """未来 4 周的日期区间（MM-DD 格式）。"""
-    today = datetime.now().date()
+    today = today_cn()
     weeks = []
     for i in range(4):
         start = today + timedelta(days=i * 7)
@@ -70,7 +71,7 @@ def _mock_plan(crop: str, growth_stage: str, area: float,
     lines = [
         f"# {crop} · 未来 30 天农事计划",
         "",
-        f"> 生成时间　{datetime.now():%Y-%m-%d %H:%M}　生育阶段　{growth_stage}　"
+        f"> 生成时间　{now_cn():%Y-%m-%d %H:%M}　生育阶段　{growth_stage}　"
         f"面积　{area} 亩　土壤　{soil_type or '未填写'}",
         "",
     ]

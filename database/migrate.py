@@ -23,6 +23,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from database.connection import db_scope, get_db_path
+from timeutil import iso_now
 
 DEFAULT_STORE_DIR = PROJECT_ROOT / "memory" / "store"
 
@@ -33,7 +34,7 @@ _SOURCE_PROFILES = "plot_profiles.json"
 
 
 def _now() -> str:
-    return datetime.now().isoformat(timespec="seconds")
+    return iso_now()
 
 
 def _load_json(path: Path):
