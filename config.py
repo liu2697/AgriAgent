@@ -76,21 +76,53 @@ GROWTH_STAGES = [
 # 配置读取诊断（供日志与农技员端"环境自检"面板使用；**不记录任何密钥明文**）
 CONFIG_WARNINGS: list[str] = []
 _CONFIG_SOURCE: dict[str, str] = {}
+_ENV_FILE_VALUES: dict[str, str] = {}
+
+
+def _env_file_values() -> dict[str, str]:
+    """读取项目根目录 .env 的键值（仅用于判断"值的来源"；取不到时返回空字典）。"""
+    global _ENV_FILE_VALUES
+    if not _ENV_FILE_VALUES:
+        try:
+            from dotenv import dotenv_values
+
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+            if os.path.exists(path):
+                _ENV_FILE_VALUES = {k: (v or "") for k, v in dotenv_values(path).items()}
+        except Exception:  # noqa: BLE001 — 来源判定失败不影响取值
+            _ENV_FILE_VALUES = {}
+    return _ENV_FILE_VALUES
 
 
 def _get_env(name: str, default: str = "") -> str:
     """读取配置：环境变量（.env）优先，未设置时回退到 Streamlit Secrets。
 
-    Streamlit Community Cloud 等云平台通过 Secrets 注入配置
-    （AI_API_KEY / AI_MODEL / ADMIN_PASSWORD 等），本地开发仍用 .env。
+    Streamlit Community Cloud 等云平台通过 Secrets 注入配置（云平台通常**同时把 Secrets
+    注入为环境变量**，所以"读到了值"并不等于"来自本地 .env"）。本函数记录**准确来源**：
 
-    与早期版本的区别：Secrets 读取异常（文件缺失、TOML 语法错误等）**不再被静默丢弃**，
-    而是记录到 CONFIG_WARNINGS 并写入服务器日志，便于在
-    "Manage app → Logs" 与农技员端"环境自检"面板中直接看到原因。
+        - 云端 Secrets（经环境变量注入）
+        - 项目 .env 文件（仅本地存在）
+        - 平台/系统环境变量
+
+    另外：Secrets 读取异常（文件缺失、TOML 语法错误等）**不再被静默丢弃**，
+    而是记录到 CONFIG_WARNINGS 并写入服务器日志（Manage app → Logs）。
     """
     val = os.getenv(name)
     if val:
-        _CONFIG_SOURCE[name] = "环境变量(.env)"
+        source = "平台/系统环境变量"
+        try:
+            import streamlit as st  # 延迟导入：测试等非 Streamlit 环境不依赖
+
+            secret = st.secrets.get(name)
+            if secret is not None and str(secret).strip() == str(val).strip():
+                source = "云端 Secrets（经环境变量注入）"
+        except Exception:  # noqa: BLE001 — 仅影响来源标注
+            pass
+        if source == "平台/系统环境变量":
+            env_file = _env_file_values()
+            if name in env_file and str(env_file.get(name, "")).strip() == str(val).strip():
+                source = "项目 .env 文件"
+        _CONFIG_SOURCE[name] = source
         return val
     try:
         import streamlit as st  # 延迟导入：测试等非 Streamlit 环境不依赖

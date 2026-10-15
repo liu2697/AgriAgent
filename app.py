@@ -79,14 +79,32 @@ ADMIN_PAGES = {
 }
 
 
-def render_config_selfcheck() -> None:
-    """农技员端"环境自检"：确认大模型密钥是否读到、来自哪里，并支持一键连通性测试。
+def _selfcheck_forced() -> bool:
+    """URL 加 ?selfcheck=1 可强制显示自检面板（便于随时排查，不影响评委观感）。"""
+    try:
+        v = st.query_params.get("selfcheck")
+    except Exception:  # noqa: BLE001 — 兼容旧版 Streamlit
+        try:
+            v = st.experimental_get_query_params().get("selfcheck", [None])[0]
+        except Exception:  # noqa: BLE001
+            return False
+    return str(v).lower() in ("1", "true", "yes", "on")
 
-    仅登录后可见，不向公网访客暴露配置信息；显示内容不含密钥明文。
+
+def render_config_selfcheck() -> None:
+    """大模型配置**异常时**才显示的提示（正常时完全不出现在界面上）。
+
+    触发条件：密钥未读到，或 Secrets 读取报错；也可用 URL 参数 ?selfcheck=1 强制显示。
+    仅登录后渲染，不向公网访客暴露配置信息，且不显示密钥明文。
     """
     d = config_diagnostics()
     ok = d["api_key_set"]
-    with st.expander("🔍 环境自检（大模型配置）", expanded=not ok):
+    problem = (not ok) or bool(d["warnings"])
+    if not problem and not _selfcheck_forced():
+        return
+
+    title = "⚠️ 大模型配置异常（点击查看原因）" if problem else "🔍 环境自检（大模型配置）"
+    with st.expander(title, expanded=problem):
         c1, c2 = st.columns(2)
         with c1:
             st.markdown("**密钥状态**：" + ("✅ 已配置" if ok else "⚠️ 未配置（当前为示例诊断模式）"))
