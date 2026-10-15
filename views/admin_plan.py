@@ -6,6 +6,7 @@ from memory import history as memory
 from memory import profiles
 from services import crop_plan
 from components import info_grid_html
+from components.layout import render_plan_block
 
 
 def render() -> None:
@@ -73,13 +74,11 @@ def render() -> None:
     if cached and cached.get("plot_key") == plot_key:
         plan = cached["plan"]
         if plan.get("success"):
-            from components.markdown_helper import strip_emoji
-            st.markdown(strip_emoji(plan["content"]))
-            st.download_button(
-                "下载方案",
-                data=plan["content"].encode("utf-8"),
-                file_name=f"农智链AgriAgent_30天生产管理方案_{p['crop']}_{p['area']}亩.md",
-                mime="text/markdown",
+            render_plan_block(
+                plan["content"],
+                title=f"{p['crop']} 地块 30 天农事管理方案（{p['area']} 亩）",
+                file_base=f"农智链AgriAgent_30天生产管理方案_{p['crop']}_{p['area']}亩",
+                key_prefix="adminplan",
             )
         else:
             st.error(plan.get("content", "生成失败"))

@@ -2,20 +2,25 @@
 
 包含：基础信息 / 生长档案时间轴 / 病害趋势 / 农事日志 / 长期管理建议 / 生产计划。
 """
+from __future__ import annotations
+
+import html
 from collections import Counter
 
 import streamlit as st
 
 from config import GROWTH_STAGES, SOIL_TYPES
 from components.charts import hbar_html
-from components.layout import fmt_cn_time, info_grid_html
+from components.layout import fmt_cn_time, info_grid_html, render_plan_block
 from memory import history as memory
 from memory import profiles
 from services import stats
 from services import crop_plan
 from services.ai_service import generate_management_advice
 
-_RISK_VALUE = {"高": 3, "中": 2, "低": 1, "无": 0, "未知": 0}
+# 注意：原先这里还有 _RISK_VALUE 与 risk_trend_rows（用于折线图）。
+# 折线图已改为风险等级分布横向条形图（日期刻度竖排难读、且与其它图表不统一），
+# 这两项随之删除，避免留下无调用的死代码。
 _LOG_META = {
     "灌溉": ("灌溉", "灌溉"),
     "施肥": ("施肥", "施肥"),
@@ -55,17 +60,6 @@ def build_timeline(records: list, profile: dict, logs: list) -> list[tuple]:
 
     events.sort(key=lambda e: e[0])
     return events
-
-
-def risk_trend_rows(records: list) -> list[dict]:
-    """风险等级趋势数据（高=3 / 中=2 / 低=1 / 无=0 / 未知=0）。"""
-    return [
-        {
-            "时间": r["timestamp"][:10],
-            "风险值": _RISK_VALUE.get(r.get("risk_level") or "未知", 0),
-        }
-        for r in sorted(records, key=lambda x: x.get("timestamp", ""))
-    ]
 
 
 def disease_counter_rows(records: list) -> list[dict]:
@@ -136,41 +130,59 @@ def render(plot_key: str) -> None:
     if not events:
         st.caption("暂无档案事件　可在下方补充农事日志，或由农户端诊断自动建档。")
     else:
-        html = [
-            """
-            <style>
-            .tl { border-left: 2px solid #cfd8dc; margin: 2px 0 2px 10px;
-                  padding: 4px 0 8px 18px; position: relative; }
-            .tl .dot { position: absolute; left: -8px; top: 6px; width: 12px; height: 12px;
-                       border-radius: 50%; background: #1f5f3a; border: 2px solid #fff; }
-            .tl .time { font-size: 12px; color: #90a4ae; }
-            .tl .title { font-weight: 600; font-size: 14px; color: #2c3e50; }
-            .tl .detail { font-size: 13px; color: #546e7a; }
-            </style>
-            """
-        ]
+        # 注意（重要教训）：这段 HTML 必须**顶格无缩进**。
+        # 之前用带缩进的三引号字符串开头，Markdown 把缩进 ≥4 空格的行当成
+        # 代码块，结果整段 `<div class="tl">…` 被原样显示成乱码。
+        # 样式也已上移到 theme.py 的 `.ag-tl*` 类，这里只输出结构。
+        parts = ['<div class="ag-tl">']
         for ts, title, detail in events:
-            html.append(
-                f'<div class="tl"><span class="dot"></span>'
-                f'<div class="time">{fmt_cn_time(ts) if len(ts) > 10 else ts}</div>'
-                f'<div class="title">{title}</div>'
-                f'<div class="detail">{detail}</div></div>'
+            time_txt = fmt_cn_time(ts) if len(ts) > 10 else ts
+            detail_html = (
+                f'<div class="ag-tl-detail">{html.escape(str(detail))}</div>'
+                if detail else ""
             )
-        st.markdown("".join(html), unsafe_allow_html=True)
+            parts.append(
+                f'<div class="ag-tl-item"><span class="ag-tl-dot"></span>'
+                f'<div class="ag-tl-time">{html.escape(str(time_txt))}</div>'
+                f'<div class="ag-tl-title">{html.escape(str(title))}</div>'
+                f'{detail_html}</div>'
+            )
+        parts.append("</div>")
+        st.markdown("".join(parts), unsafe_allow_html=True)
 
     # ------------------------------------------------------------------
     # 3. 病害趋势
     # ------------------------------------------------------------------
     st.markdown("### 病害趋势")
     if records:
-        st.markdown("风险等级趋势")
-        st.line_chart(risk_trend_rows(records), x="时间", y="风险值")
+        st.markdown("风险等级分布")
+        # 用横向条形图替代折线图：
+        # 原先 st.line_chart 把日期当成 x 轴刻度，长日期被旋转成竖排、难以阅读，
+        # 且与页面其它图表风格不一致。风险等级本质是离散分类（高/中/低/无），
+        # 用横向条形图 + 风险配色更直观，也与"病害出现次数"两图格式统一。
+        risk_counter = Counter(
+            (r.get("risk_level") or "未知") for r in records
+        )
+        risk_order = ["高", "中", "低", "无", "未知"]
+        risk_rows = [
+            (f"{lv}风险" if lv != "未知" else "未知", risk_counter[lv])
+            for lv in risk_order if risk_counter.get(lv)
+        ]
+        risk_colors = {
+            "高风险": "#c0392b", "中风险": "#e67e22",
+            "低风险": "#1976d2", "无风险": "#2e7d32", "未知": "#b0bec5",
+        }
+        st.markdown(
+            hbar_html(risk_rows, unit="次", colors=risk_colors, show_pct=True),
+            unsafe_allow_html=True,
+        )
+
         st.markdown("病害出现次数")
         # 横向条形图：与数据总览/病害统计保持一致，
         # 避免 st.bar_chart 把长中文病害名旋转成竖排。
         st.markdown(
             hbar_html([(d["病害"], d["次数"]) for d in disease_counter_rows(records)],
-                      unit="", show_pct=True),
+                      unit="次", show_pct=True),
             unsafe_allow_html=True,
         )
     else:
@@ -209,9 +221,18 @@ def render(plot_key: str) -> None:
     if st.button("生成地块长期管理建议", type="primary"):
         with st.spinner("正在综合分析地块档案…"):
             advice = generate_management_advice(plot_key, records, profile, logs)
+        st.session_state["plot_advice"] = {"plot_key": plot_key, "advice": advice}
+
+    cached_advice = st.session_state.get("plot_advice")
+    if cached_advice and cached_advice.get("plot_key") == plot_key:
+        advice = cached_advice["advice"]
         if advice.get("success"):
-            from components.markdown_helper import strip_emoji
-            st.markdown(strip_emoji(advice["content"]))
+            render_plan_block(
+                advice["content"],
+                title=f"{location or '未命名地块'} 地块长期管理建议（{crop}）",
+                file_base=f"农智链AgriAgent_长期管理建议_{location or '未命名地块'}_{crop}",
+                key_prefix="advice",
+            )
         else:
             st.error(advice.get("content", "生成失败"))
 
@@ -238,13 +259,11 @@ def render(plot_key: str) -> None:
     if cached_plan and cached_plan.get("plot_key") == plot_key:
         plan = cached_plan["plan"]
         if plan.get("success"):
-            from components.markdown_helper import strip_emoji
-            st.markdown(strip_emoji(plan["content"]))
-            st.download_button(
-                "下载生产计划",
-                data=plan["content"].encode("utf-8"),
-                file_name=f"农智链AgriAgent_生产计划_{location or '未命名地块'}_{crop}.md",
-                mime="text/markdown",
+            render_plan_block(
+                plan["content"],
+                title=f"{crop} 地块未来 30 天农事计划（{area} 亩）",
+                file_base=f"农智链AgriAgent_生产计划_{location or '未命名地块'}_{crop}",
+                key_prefix="plotplan",
             )
         else:
             st.error(plan.get("content", "生成失败"))

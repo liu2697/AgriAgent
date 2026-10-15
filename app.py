@@ -37,8 +37,8 @@ except Exception as _db_err:  # noqa: BLE001 — 初始化失败不阻断页面�
 
 # ---------------------------------------------------------------------------
 # 首次启动自动生成演示数据（数据库为空时；已初始化过的库不受影响）
-# 用途：Streamlit Community Cloud 等公网部署环境下磁盘是临时的，
-#       应用重启后自动重建演示地块/诊断/工单，评委打开即有完整数据可看。
+# 用途：Streamlit Community Cloud 等公网部署环境磁盘为临时存储，
+#       应用重启后自动重建演示地块/诊断/工单，评委打开即有完整数据。
 # ---------------------------------------------------------------------------
 try:
     from database.connection import db_scope as _db_scope
@@ -110,10 +110,7 @@ else:
                     农技员监测后台
                 </div>
                 <div style="color:#78909c;font-size:0.88rem;margin-bottom:2rem;">
-                    请在左侧输入管理密码登录
-                </div>
-                <div style="color:#b0bec5;font-size:0.78rem;">
-                    默认密码 admin123（可在 .env 中通过 ADMIN_PASSWORD 修改）
+                    请输入密码
                 </div>
             </div>
             """,

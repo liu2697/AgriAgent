@@ -1,7 +1,7 @@
 """农技员端 · 地块档案管理（含地块详情页入口）。"""
 import streamlit as st
 
-from components.layout import fmt_cn_time
+from components.layout import fmt_cn_time, plot_stats_html
 from memory import history as memory
 from memory import profiles
 from services import stats
@@ -29,11 +29,16 @@ def render() -> None:
         with st.expander(
             f"{loc_txt}　{p['crop']}　{p['area']}亩　最近风险 {p['last_risk']}　识别病害 {p.get('disease', '未识别')}",
         ):
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("诊断次数", p["visits"])
-            c2.metric("面积", f"{p['area']} 亩")
-            c3.metric("首次诊断", fmt_cn_time(p["first_time"]))
-            c4.metric("最近诊断", fmt_cn_time(p["last_time"]))
+            # 紧凑信息格替代 st.metric：避免数值字号过大、日期被截断
+            st.markdown(
+                plot_stats_html([
+                    ("诊断次数", f"{p['visits']} 次"),
+                    ("面积", f"{p['area']} 亩"),
+                    ("首次诊断", fmt_cn_time(p["first_time"])),
+                    ("最近诊断", fmt_cn_time(p["last_time"])),
+                ]),
+                unsafe_allow_html=True,
+            )
 
             st.markdown(f"最近诊断摘要　{p.get('last_summary', '') or '暂无'}")
             st.markdown(f"最近建议摘要　{(p.get('last_recommendation', '') or '暂无')[:200]}")

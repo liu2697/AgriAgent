@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import html
 from datetime import datetime
 from typing import Optional, List, Tuple
 
@@ -39,6 +40,26 @@ def info_card_html(label: str, value: str) -> str:
 def info_grid_html(cards: List[Tuple[str, str]]) -> str:
     """信息卡网格：[(标签, 值), ...] → 卡片化布局。"""
     return f'<div class="ag-info-grid">{"".join(info_card_html(l, v) for l, v in cards)}</div>'
+
+
+def plot_stats_html(cards: List[Tuple[str, str]], accent_first: bool = True) -> str:
+    """地块卡片用的紧凑信息格（4 列）。
+
+    替代 st.metric：metric 的数值字号约 2rem，在四列布局里"6""80.0 亩"显得
+    过分巨大，而日期这类长文本会被截断成「2026年5...」（用户实际反馈
+    "四个方块字太大了，改的美观一点"）。这里数值字号 0.92rem、
+    长文本自动换行不截断，视觉上与页面其它信息卡统一。
+    """
+    items = []
+    for i, (label, value) in enumerate(cards):
+        cls = "accent" if (accent_first and i == 0) else ""
+        items.append(
+            f'<div class="ag-plot-stat">'
+            f'<div class="ag-plot-stat-lbl">{html.escape(str(label))}</div>'
+            f'<div class="ag-plot-stat-val {cls}">{html.escape(str(value))}</div>'
+            f'</div>'
+        )
+    return f'<div class="ag-plot-stats">{"".join(items)}</div>'
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +109,72 @@ RISK_BADGE = {
 def risk_badge_html(level: str) -> str:
     cls, label = RISK_BADGE.get(level, RISK_BADGE["未知"])
     return f'<span class="ag-badge {cls}">{label}</span>'
+
+
+def render_plan_block(content: str, *, title: str, file_base: str,
+                      key_prefix: str, heading: str = "") -> None:
+    """渲染生产/管理方案：结构化卡片 + PDF / Word / 纯文本三种导出。
+
+    为什么要做成共享组件：
+      生产方案在**两个页面**都会出现（农技员端「生产计划」页、地块详情页），
+      原先两处各自 `st.markdown(strip_emoji(...))`，结果都出现「# / ** / ```」
+      原样显示。集中成一处可保证两页渲染与导出一致，改一次两边都生效。
+
+    参数：
+      content     方案 Markdown 原文
+      title       导出文件名与 PDF/Word 文档标题
+      file_base   下载文件名前缀（不含扩展名）
+      key_prefix  组件内 widget key 前缀（多处分块渲染时必须唯一）
+      heading     可选小节标题
+    """
+    from components.markdown_helper import plan_html, plan_plain_text
+
+    if heading:
+        st.markdown(f"##### {heading}")
+    st.markdown(plan_html(content), unsafe_allow_html=True)
+
+    st.markdown("###### 导出方案")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        try:
+            from services.plan_export import build_plan_pdf
+            st.download_button(
+                "下载 PDF",
+                data=build_plan_pdf(content, title),
+                file_name=f"{file_base}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key=f"{key_prefix}_pdf",
+            )
+        except Exception as exc:  # 依赖缺失时如实说明，不静默失败
+            st.button("下载 PDF（不可用）", disabled=True,
+                      use_container_width=True, key=f"{key_prefix}_pdf_na")
+            st.caption(f"PDF 导出不可用：{exc}")
+    with c2:
+        try:
+            from services.plan_export import build_plan_docx
+            st.download_button(
+                "下载 Word 文档",
+                data=build_plan_docx(content, title),
+                file_name=f"{file_base}.docx",
+                mime=("application/vnd.openxmlformats-officedocument"
+                      ".wordprocessingml.document"),
+                use_container_width=True,
+                key=f"{key_prefix}_docx",
+            )
+        except Exception as exc:
+            st.button("下载 Word（不可用）", disabled=True,
+                      use_container_width=True, key=f"{key_prefix}_docx_na")
+            st.caption(f"Word 导出不可用：{exc}")
+    with c3:
+        st.download_button(
+            "下载纯文本",
+            data=plan_plain_text(content).encode("utf-8"),
+            file_name=f"{file_base}.txt",
+            mime="text/plain",
+            use_container_width=True,
+            key=f"{key_prefix}_txt",
+        )
 
 
 def page_header(title: str, subtitle: str = "", breadcrumb: Optional[List[str]] = None) -> None:
@@ -173,9 +260,11 @@ __all__ = [
     "risk_badge_html",
     "render_brand_block",
     "render_footer",
+    "render_plan_block",
     "fmt_cn_time",
     "info_card_html",
     "info_grid_html",
+    "plot_stats_html",
     "task_status_display",
     "flow_steps_html",
 ]

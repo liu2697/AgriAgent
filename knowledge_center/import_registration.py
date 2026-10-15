@@ -39,6 +39,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Iterable
 
@@ -48,19 +49,52 @@ PESTICIDE_FILE = DATA_DIR / "pesticide.json"
 # 机器导入的批量登记库（公告附件，只含作物/防治对象，无剂量）
 REGISTRY_FILE = DATA_DIR / "pesticide_registry.json"
 
-# 知识库覆盖的作物（用于筛选相关登记记录）
+# 知识库覆盖的作物（用于筛选相关登记记录）。
+# 必须与 knowledge_center/data/*.json 里的作物集合保持一致，
+# 否则导入时会把新作物的登记记录整批过滤掉（实测踩过：扩充到 24 作物后，
+# 这里还是老的 9 种，导致油菜/大麦等作物的登记数据进不来）。
 TARGET_CROPS = [
-    "玉米", "小麦", "马铃薯", "大豆", "棉花", "花生", "高粱", "向日葵", "水稻",
+    # 谷类 / 麦类
+    "玉米", "小麦", "大麦", "燕麦", "荞麦", "谷子", "糜子", "高粱", "水稻",
+    # 薯类
+    "马铃薯",
+    # 豆类
+    "大豆", "红小豆", "绿豆", "蚕豆", "豌豆",
+    # 油料
+    "油菜", "花生", "芝麻", "向日葵", "蓖麻", "亚麻",
+    # 纤维 / 糖料 / 饲草
+    "棉花", "甜菜", "苜蓿",
 ]
 
 # 作物/场所 → 规范作物名。顺序敏感：先长后短，避免「冬小麦」被「小麦」截断前丢失信息。
+# 作物别名 → 规范作物名。
+# **顺序敏感**：长的、更具体的别名必须排在前面，否则会被短别名抢先匹配。
+# 例：「冬油菜」必须排在「油菜」前，「春大豆」排在「大豆」前，
+# 否则「冬油菜田」虽然也能得到"油菜"，但一旦别名表里出现更短的冲突项就会出错。
+# 覆盖范围对应 knowledge_center/data/*.json 里的全部作物（24 种）。
 _CROP_ALIASES = [
+    # 麦类
     ("冬小麦", "小麦"), ("春小麦", "小麦"), ("小麦", "小麦"),
-    ("玉米", "玉米"), ("马铃薯", "马铃薯"), ("土豆", "马铃薯"),
-    ("大豆", "大豆"), ("黄豆", "大豆"),
-    ("棉花", "棉花"), ("花生", "花生"),
-    ("高粱", "高粱"), ("向日葵", "向日葵"), ("油葵", "向日葵"),
-    ("水稻", "水稻"),
+    ("大麦", "大麦"), ("燕麦", "燕麦"), ("荞麦", "荞麦"),
+    # 谷类
+    ("玉米", "玉米"), ("水稻", "水稻"), ("谷子", "谷子"), ("糜子", "糜子"),
+    ("高粱", "高粱"),
+    # 薯类
+    ("马铃薯", "马铃薯"), ("土豆", "马铃薯"),
+    # 豆类
+    ("春大豆", "大豆"), ("夏大豆", "大豆"), ("大豆", "大豆"), ("黄豆", "大豆"),
+    ("红小豆", "红小豆"), ("小豆", "红小豆"),
+    ("绿豆", "绿豆"),
+    ("蚕豆", "蚕豆"),
+    ("豌豆", "豌豆"),
+    # 油料
+    ("冬油菜", "油菜"), ("春油菜", "油菜"), ("油菜", "油菜"),
+    ("花生", "花生"), ("芝麻", "芝麻"),
+    ("向日葵", "向日葵"), ("油葵", "向日葵"),
+    ("蓖麻", "蓖麻"),
+    ("亚麻", "亚麻"),
+    # 纤维 / 糖料 / 其他
+    ("棉花", "棉花"), ("甜菜", "甜菜"), ("苜蓿", "苜蓿"),
 ]
 
 # 需要从"作物/场所"里剥掉的场所后缀（保留在 crop_place 原文中）
@@ -71,9 +105,24 @@ _PLACE_SUFFIXES = [
 
 _SPLIT_RE = r"[、,，;；/]+"
 
+# 复配剂名称的分隔符在官方 XLS 里**不统一**：多数用「·」（U+00B7），
+# 但有 216 个产品用「•」（U+2022）。若不统一，核验的复配剂判定
+# （只认「·」）会漏掉这 216 个，把它们当成普通单剂去核对登记范围，
+# 得出错误的"已登记"结论。因此导入时一律归一化为「·」。
+_MIXTURE_SEP_VARIANTS = "•‧・∙⋅"
+
+
+def normalize_name(name: str) -> str:
+    """归一化农药名称：统一复配分隔符、压缩空白、去掉控制字符。"""
+    s = str(name or "")
+    for ch in _MIXTURE_SEP_VARIANTS:
+        s = s.replace(ch, "·")
+    s = s.replace("\x7f", "").replace("\u3000", " ")
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
+
 
 def _split(text: str) -> list[str]:
-    import re
     return [p.strip() for p in re.split(_SPLIT_RE, str(text or "")) if p.strip()]
 
 
@@ -120,7 +169,7 @@ def is_relevant(record: dict) -> bool:
 
 def record_to_product(record: dict) -> dict:
     """单条官方登记记录 → 归一化产品条目。"""
-    name = str(record.get("农药名称", "")).strip()
+    name = normalize_name(record.get("农药名称", ""))
     crops = normalize_crops(record.get("作物/场所", ""))
     targets = [t for t in _split(record.get("防治对象", "")) if t]
     reg_no = str(record.get("登记证号", "")).strip()
@@ -206,10 +255,12 @@ def validate_products(products: dict[str, dict]) -> dict:
     from collections import Counter
 
     problems = {
-        "no_crop": [],        # 有防治对象但作物未能归一化
-        "no_target": [],      # 有作物但没有防治对象
-        "name_too_long": [],  # 名称异常长（可能是解析错位）
-        "no_category": [],    # 缺农药类别
+        "no_crop": [],           # 有防治对象但作物未能归一化
+        "no_target": [],         # 有作物但没有防治对象
+        "name_too_long": [],     # 名称异常长（可能是解析错位）
+        "no_category": [],       # 缺农药类别
+        "nonstandard_separator": [],  # 名称仍含未归一化的复配分隔符
+        "control_chars": [],     # 名称含控制字符
     }
     for name, p in products.items():
         if not p.get("registered_crops"):
@@ -220,6 +271,10 @@ def validate_products(products: dict[str, dict]) -> dict:
             problems["name_too_long"].append(name)
         if not p.get("category"):
             problems["no_category"].append(name)
+        if any(ch in name for ch in _MIXTURE_SEP_VARIANTS):
+            problems["nonstandard_separator"].append(name)
+        if any(ord(ch) < 32 or ord(ch) == 127 for ch in name):
+            problems["control_chars"].append(name)
     return {k: {"count": len(v), "sample": v[:8]} for k, v in problems.items()}
 
 

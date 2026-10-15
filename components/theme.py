@@ -1182,6 +1182,126 @@ hr, .stDivider {{
     font-weight: 500;
 }}
 
+/* -------- 生长档案时间轴（原先样式内联在页面里，已上移集中管理） -------- */
+.ag-tl {{
+    border-left: 2px solid #cfd8dc;
+    margin: 0.2rem 0 0.2rem 0.6rem;
+    padding: 0.2rem 0 0.5rem 1.15rem;
+}}
+.ag-tl-item {{
+    position: relative;
+    padding-bottom: 0.55rem;
+}}
+.ag-tl-item:last-child {{ padding-bottom: 0; }}
+.ag-tl-dot {{
+    position: absolute;
+    left: -1.45rem;
+    top: 0.35rem;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #1f5f3a;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #cfd8dc;
+}}
+.ag-tl-time {{
+    font-size: 0.74rem;
+    color: #90a4ae;
+    line-height: 1.4;
+}}
+.ag-tl-title {{
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #2c3e50;
+    line-height: 1.5;
+}}
+.ag-tl-detail {{
+    font-size: 0.82rem;
+    color: #546e7a;
+    line-height: 1.6;
+}}
+
+/* -------- 生产方案（结构化卡片：按周/阶段分组） -------- */
+.ag-plan {{
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0.6rem 0 0.2rem;
+}}
+.ag-plan-block {{
+    background: #ffffff;
+    border: 1px solid #e4e9ef;
+    border-left: 3px solid #1F6B45;
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem 0.75rem;
+}}
+.ag-plan-block-title {{
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1f5f3a;
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px dashed #e2efe7;
+}}
+.ag-plan-block ul {{
+    margin: 0;
+    padding-left: 1.15rem;
+}}
+.ag-plan-block li {{
+    font-size: 0.85rem;
+    line-height: 1.85;
+    color: #37474f;
+    margin-bottom: 0.15rem;
+}}
+.ag-plan-block li strong {{
+    color: #0d5c63;
+    font-weight: 700;
+}}
+.ag-plan-empty {{
+    padding: 1rem;
+    text-align: center;
+    color: #b0bec5;
+    font-size: 0.82rem;
+}}
+
+/* -------- 地块卡片内的紧凑信息格（替代 st.metric） --------
+ * 为什么不用 st.metric：Streamlit 的 metric 数值字号约 2rem，
+ * 在四列布局里"诊断次数 6"会显得过分巨大，而日期类长文本会被截断成
+ * 「2026年5...」（用户实际反馈"字太大了、不好看"）。
+ * 这里改自绘信息格：数值字号可控、长文本自动换行不截断、标签在上值在下。
+ */
+.ag-plot-stats {{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin: 0.15rem 0 0.6rem;
+}}
+.ag-plot-stat {{
+    background: #f8fafc;
+    border: 1px solid #e8eef3;
+    border-radius: 4px;
+    padding: 0.5rem 0.65rem;
+}}
+.ag-plot-stat-lbl {{
+    font-size: 0.7rem;
+    color: #90a4ae;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.18rem;
+}}
+.ag-plot-stat-val {{
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.35;
+    word-break: break-word;
+}}
+.ag-plot-stat-val.accent {{ color: #1F6B45; }}
+@media only screen and (max-width: 768px) {{
+    .ag-plot-stats {{ grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }}
+    .ag-plot-stat-val {{ font-size: 0.88rem; }}
+}}
+
 /* -------- 识别结果卡（模块1）-------- */
 .ag-rpt-identify {{
     display: grid;
@@ -1477,6 +1597,35 @@ hr, .stDivider {{
     min-width: 0 !important;
     max-width: 100%;
     white-space: nowrap;
+}}
+
+/* -------- 等高统计卡一行（替代多个 st.columns，避免卡片高度不齐）--------
+ * 问题：把统计卡分别放进独立的 st.columns 时，每列高度由各自内容决定，
+ * 内容多的那一列（例如列出几十个名称、换成 3 行）会把卡片撑高，
+ * 同一行里就出现高低不齐（用户实际反馈）。
+ * 解法：把整行卡片放进同一个 flex 容器，用 align-items: stretch
+ * 让所有卡片拉伸到该行最高者，天然等高。
+ */
+.ag-cards {{
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}}
+.ag-cards > .ag-card {{
+    flex: 1 1 0;
+    min-width: 12rem;
+    margin-bottom: 0 !important;
+    display: flex;
+    flex-direction: column;
+}}
+/* 值与其下的说明都靠上，卡片被拉伸后底部留白均匀，不会出现孤立空白 */
+.ag-cards > .ag-card .ag-card-value {{
+    margin-bottom: 0.2rem;
+}}
+.ag-cards > .ag-card .ag-card-trend {{
+    flex: 1 1 auto;
 }}
 
 /* -------- 农户端图片输入：拍照按钮风格与上传框对齐 --------
