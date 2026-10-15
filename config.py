@@ -73,22 +73,37 @@ GROWTH_STAGES = [
     "成熟期",
 ]
 
+# 配置读取诊断（供日志与农技员端"环境自检"面板使用；**不记录任何密钥明文**）
+CONFIG_WARNINGS: list[str] = []
+_CONFIG_SOURCE: dict[str, str] = {}
+
+
 def _get_env(name: str, default: str = "") -> str:
     """读取配置：环境变量（.env）优先，未设置时回退到 Streamlit Secrets。
 
     Streamlit Community Cloud 等云平台通过 Secrets 注入配置
     （AI_API_KEY / AI_MODEL / ADMIN_PASSWORD 等），本地开发仍用 .env。
+
+    与早期版本的区别：Secrets 读取异常（文件缺失、TOML 语法错误等）**不再被静默丢弃**，
+    而是记录到 CONFIG_WARNINGS 并写入服务器日志，便于在
+    "Manage app → Logs" 与农技员端"环境自检"面板中直接看到原因。
     """
     val = os.getenv(name)
     if val:
+        _CONFIG_SOURCE[name] = "环境变量(.env)"
         return val
     try:
         import streamlit as st  # 延迟导入：测试等非 Streamlit 环境不依赖
         secret = st.secrets.get(name)
         if secret is not None and str(secret).strip() != "":
+            _CONFIG_SOURCE[name] = "云端 Secrets"
             return str(secret).strip()
-    except Exception:
-        pass
+        _CONFIG_SOURCE[name] = "未配置"
+    except Exception as exc:  # noqa: BLE001 — 记录原因，不再静默
+        _CONFIG_SOURCE[name] = "读取失败"
+        msg = f"读取 Streamlit Secrets 失败：{type(exc).__name__}: {exc}"
+        if msg not in CONFIG_WARNINGS:
+            CONFIG_WARNINGS.append(msg)
     return default
 
 
@@ -113,3 +128,24 @@ AI_MODEL_SUPPORTS_VISION = _get_env("AI_MODEL_SUPPORTS_VISION", "1") not in ("0"
 
 # 农技员管理端登录密码（默认 admin123，可在 .env 或 Streamlit Secrets 中通过 ADMIN_PASSWORD 修改）
 ADMIN_PASSWORD = _get_env("ADMIN_PASSWORD", "admin123")
+
+
+def config_diagnostics() -> dict:
+    """配置自检信息（供农技员端"环境自检"面板展示；不含密钥明文）。"""
+    return {
+        "api_key_set": bool(AI_API_KEY),
+        "api_key_length": len(AI_API_KEY),
+        "api_key_source": _CONFIG_SOURCE.get("AI_API_KEY", "默认值"),
+        "api_url": AI_API_URL,
+        "model": AI_MODEL,
+        "vision": AI_MODEL_SUPPORTS_VISION,
+        "admin_password_source": _CONFIG_SOURCE.get("ADMIN_PASSWORD", "默认值"),
+        "warnings": list(CONFIG_WARNINGS),
+    }
+
+
+# 启动时把配置告警写入服务器日志：Streamlit Cloud 的「Manage app → Logs」可直接看到
+if CONFIG_WARNINGS:
+    import sys as _sys
+
+    print("[config] 配置告警：" + "；".join(CONFIG_WARNINGS), file=_sys.stderr)

@@ -1,7 +1,12 @@
 """农智链 AgriAgent 统一入口 — Streamlit + 角色路由 + 组件化布局。"""
+import time
+
 import streamlit as st
 
-from config import APP_NAME, APP_SUBTITLE, APP_ICON, APP_VERSION, ADMIN_PASSWORD
+from config import (
+    APP_NAME, APP_SUBTITLE, APP_ICON, APP_VERSION, ADMIN_PASSWORD,
+    config_diagnostics,
+)
 from components import (
     inject_theme, render_brand_block, render_footer,
     risk_badge_html,
@@ -74,6 +79,59 @@ ADMIN_PAGES = {
 }
 
 
+def render_config_selfcheck() -> None:
+    """农技员端"环境自检"：确认大模型密钥是否读到、来自哪里，并支持一键连通性测试。
+
+    仅登录后可见，不向公网访客暴露配置信息；显示内容不含密钥明文。
+    """
+    d = config_diagnostics()
+    ok = d["api_key_set"]
+    with st.expander("🔍 环境自检（大模型配置）", expanded=not ok):
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("**密钥状态**：" + ("✅ 已配置" if ok else "⚠️ 未配置（当前为示例诊断模式）"))
+            st.caption(f"来源：{d['api_key_source']}　密钥长度：{d['api_key_length']} 字符")
+            st.caption(f"管理密码来源：{d['admin_password_source']}")
+        with c2:
+            st.markdown(f"**模型**：`{d['model']}`")
+            st.caption("视觉（图片）支持：" + ("是" if d["vision"] else "否"))
+            st.caption("接口：" + d["api_url"][:52] + "…")
+
+        for w in d["warnings"]:
+            st.error("配置读取异常（这就是密钥没生效的原因）：\n\n" + w)
+        if d["warnings"]:
+            st.caption("常见原因：Secrets 里的值没加英文双引号、用了中文引号、用了冒号（YAML 写法），"
+                       "或加了 [表头]（会变成嵌套键而读不到）。")
+
+        if not ok:
+            st.info(
+                "修复方式：应用页右下角 **Manage app → Settings → Secrets**，"
+                "按下面格式粘贴后点 **Save**（应用会自动重启）："
+            )
+            st.code(
+                'AI_API_KEY = "sk-你的密钥"\n'
+                'AI_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"\n'
+                'AI_MODEL = "qwen3-vl-plus"\n'
+                'ADMIN_PASSWORD = "admin123"',
+                language="toml",
+            )
+
+        if ok and st.button("测试连通性（会真实调用一次模型）", key="cfg_conn_test"):
+            with st.spinner("正在调用模型……"):
+                try:
+                    from services.ai_service import _request_ai
+
+                    t0 = time.time()
+                    content, err = _request_ai([{"role": "user", "content": "请只回复：ok"}])
+                    dt = time.time() - t0
+                    if err:
+                        st.error(f"✗ 调用失败（{dt:.1f}s）：{err}")
+                    else:
+                        st.success(f"✓ 调用成功（{dt:.1f}s）：{(content or '').strip()[:40]}")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(f"✗ 调用异常：{exc}")
+
+
 with st.sidebar:
     render_brand_block()
     role = st.radio("选择角色", [ROLE_FARMER, ROLE_TECH], key="agriagent_role")
@@ -117,6 +175,7 @@ else:
             unsafe_allow_html=True,
         )
     else:
+        render_config_selfcheck()
         ADMIN_PAGES[page]()
 
 render_footer()
