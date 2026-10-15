@@ -19,6 +19,7 @@ from database import repository as repo
 from timeutil import iso_now, now_cn
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent   # memory/ 的上一级 = 项目根目录
 MEMORY_DIR = Path(os.environ.get("AGENT_MEMORY_DIR", Path(__file__).resolve().parent / "store"))
 MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -191,11 +192,20 @@ def delete_plot(plot_key: str) -> bool:
 # ==========================================================================
 
 def _save_task_image(task_id: str, image_bytes: bytes, ext: str = "png") -> str:
+    """保存工单图片，返回**相对项目根目录**的路径（保证数据库可移植）。
+
+    早期实现返回绝对路径（如 D:\\...\\task_images\\tk_xxx.png），项目一旦被拷贝到
+    别的机器/云端容器，这个路径就失效（界面显示图片靠 task_id 扫描目录，因此不影响
+    显示，但数据库里留着本机路径既不专业也不便于迁移）。
+    """
     ext = ext.lstrip(".") or "png"
     fname = f"{task_id}.{ext}"
     fpath = TASK_IMG_DIR / fname
     fpath.write_bytes(image_bytes)
-    return str(fpath)
+    try:
+        return fpath.relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:  # 图片目录被自定义到项目外（AGENT_MEMORY_DIR）时退回绝对路径
+        return str(fpath)
 
 
 def _task_image_path(task_id: str) -> Optional[str]:

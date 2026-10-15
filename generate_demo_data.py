@@ -29,6 +29,15 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
+# 兼容中文 Windows 控制台（GBK 编码）：本脚本会打印 ✅ 📋 📍 🔄 等字符，
+# 若 stdout 编码为 GBK，print 会抛 UnicodeEncodeError 并**中断整个初始化**
+# （表现为"演示数据生成失败"+ 空库）。此处强制按 UTF-8 输出且出错不抛异常。
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:  # noqa: BLE001 — 老版本/被重定向的流不支持 reconfigure 时忽略
+        pass
+
 # 支持 `python generate_demo_data.py` 直接运行：将项目根加入 sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:

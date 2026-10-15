@@ -2,6 +2,50 @@
 
 北方大田智能植保与生产管理智能体平台 —— 基于大语言模型智能体的农业植保辅助决策系统。
 
+## 目录结构
+
+```
+AgriAgent/
+├── app.py                    # 入口：角色路由（农户端 / 农技员端）+ 空库自动初始化演示数据
+├── config.py                 # 全局配置：读取 .env → 云端 Secrets 两级回退，模型/密码
+├── timeutil.py               # 统一北京时间工具（云端容器为 UTC，避免时间偏移 8 小时）
+├── generate_demo_data.py     # 演示数据生成（4 农户 / 6 地块 / 34 诊断 / 93 日志 / 6 工单）
+├── requirements.txt          # 依赖清单
+├── .env.example              # 配置模板（复制为 .env 后填写）
+├── agent/                    # 自研轻量智能体框架：Planner（确定性规则规划）+ Executor（六步流水线）
+│   ├── planner.py            #   任务规划：按输入条件生成步骤序列
+│   ├── executor.py           #   步骤执行：知识检索→视觉分析→历史召回→LLM 诊断→安全审核→归档
+│   ├── knowledge.py          #   知识检索服务（RAG 加权打分）
+│   ├── memory.py             #   地块长期记忆服务（历史诊断召回）
+│   └── safety.py             #   安全审核服务（三级可信的第一级：规则闸门）
+├── services/                 # 业务服务层
+│   ├── ai_service.py         #   大模型调用（多模态诊断 / 视觉描述 / 长期管理建议）+ 示例模式兜底
+│   ├── crop_plan.py          #   30 天农事计划生成（真实模型 / 规则模板兜底）
+│   ├── stats.py              #   统计分析（病害分布、风险等级、趋势）
+│   ├── reporting.py          #   报告导出（PDF / Word / 纯文本）
+│   └── plan_export.py        #   方案文档导出（reportlab / python-docx）
+├── database/                 # 数据层：SQLite 连接、建表、仓储、JSON→SQLite 迁移
+├── memory/                   # 地块档案与工单存储
+│   ├── history.py            #   诊断记录 / 工单读写
+│   ├── profiles.py           #   地块档案（土壤、面积、农事日志）
+│   └── store/                #   初始 JSON 数据 + 演示工单图片
+├── knowledge/                # 内置病害/农药知识条目
+├── knowledge_center/         # 农业知识中心
+│   ├── loader.py             #   知识加载（data/*.json 合并）
+│   ├── retriever.py          #   加权打分检索 + 作物别名识别
+│   ├── registration.py       #   农药登记核验（1171 条公告数据）
+│   ├── data/                 #   24 种作物病害 JSON + 农药登记库
+│   └── _cropdata/            #   16 个作物数据模块（知识构建用）
+├── safety/                   # 安全审核规则（禁限用农药、高风险内容拦截）
+├── views/                    # 界面：农户端 + 农技员端 9 个功能页面
+├── components/               # 界面组件：布局、主题、图表、Markdown/HTML 渲染
+├── tools/                    # 知识库构建与农药登记数据采集脚本（离线使用）
+├── tests/                    # 自动化测试（119 项）
+└── data/agragent.db          # 演示数据库（首次启动若为空会自动生成）
+```
+
+> 模块职责与设计细节见《软件创意设计文档》；测试命令见文末「测试」章节。
+
 ## 启动方式
 
 ```bash
@@ -10,6 +54,21 @@ streamlit run app.py --server.port=8505
 ```
 
 首次启动时自动创建 SQLite 数据库（`data/agragent.db`）。
+
+**依赖说明**：`requirements.txt` 已覆盖运行全部依赖（streamlit / Pillow / python-dotenv /
+requests / reportlab / python-docx）。另有**可选依赖** `xlrd`：仅当运行
+`tools/harvest_registration.py` 解析旧版 `.xls` 登记公告时才需要
+（`pip install xlrd`），不影响主程序运行。
+
+## 登录方式与账号
+
+| 端 | 登录方式 | 账号 / 密码 |
+|---|---|---|
+| 农户端 | 左侧选择「农户端 · 智能生产管理」 | **无需登录**，直接使用 |
+| 农技员端 | 左侧选择「农技员端 · 监测后台」，输入管理密码 | **默认密码 `admin123`** |
+
+修改管理密码：在 `.env` 中设置 `ADMIN_PASSWORD=你的密码`（云端部署则改 Streamlit Secrets 的
+`ADMIN_PASSWORD`），保存后重启应用生效。密码只用于农技员端登录，农户端不受影响。
 
 ## 模型配置（重要）
 

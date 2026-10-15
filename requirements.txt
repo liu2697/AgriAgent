@@ -1,6 +1,11 @@
+# ===== 运行依赖（主程序 + 测试全部所需）=====
 streamlit>=1.30.0
 Pillow>=10.0.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 reportlab>=4.0.0
 python-docx>=1.1.0
+
+# ===== 可选依赖（不装不影响主程序运行）=====
+# 仅 tools/harvest_registration.py 解析旧版 .xls 格式农药登记公告时需要：
+# xlrd>=2.0.1

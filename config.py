@@ -95,47 +95,57 @@ def _env_file_values() -> dict[str, str]:
 
 
 def _get_env(name: str, default: str = "") -> str:
-    """读取配置：环境变量（.env）优先，未设置时回退到 Streamlit Secrets。
+    """读取配置：**云端 Secrets 优先**，其次环境变量（本地 .env / 平台注入），最后默认值。
 
-    Streamlit Community Cloud 等云平台通过 Secrets 注入配置（云平台通常**同时把 Secrets
-    注入为环境变量**，所以"读到了值"并不等于"来自本地 .env"）。本函数记录**准确来源**：
+    为什么 Secrets 优先（重要，踩过坑）：
+        Streamlit Community Cloud 会把 Secrets **同时注入为容器环境变量**，而环境变量在
+        容器启动那一刻就冻结了——**修改 Secrets 后，已运行容器的环境变量仍是旧值**。
+        早期实现"环境变量优先"，就会出现"Secrets 里明明写着 admin123，登录却要 999999"
+        这类灵异现象（旧环境变量把新 Secrets 盖住了）。改为 Secrets 优先后：
+        改 Secrets → 应用重启即生效，不会再被陈旧环境变量覆盖。
+        本地开发没有 secrets.toml（访问 st.secrets 会抛 SecretNotFound），
+        会自动落到环境变量 / .env，行为不变。
 
-        - 云端 Secrets（经环境变量注入）
+    来源标注（供"环境自检"面板与日志排查）：
+        - 云端 Secrets
         - 项目 .env 文件（仅本地存在）
         - 平台/系统环境变量
 
-    另外：Secrets 读取异常（文件缺失、TOML 语法错误等）**不再被静默丢弃**，
+    另外：Secrets 读取异常（真 TOML 语法错误等）**不再被静默丢弃**，
     而是记录到 CONFIG_WARNINGS 并写入服务器日志（Manage app → Logs）。
     """
-    val = os.getenv(name)
-    if val:
-        source = "平台/系统环境变量"
-        try:
-            import streamlit as st  # 延迟导入：测试等非 Streamlit 环境不依赖
-
-            secret = st.secrets.get(name)
-            if secret is not None and str(secret).strip() == str(val).strip():
-                source = "云端 Secrets（经环境变量注入）"
-        except Exception:  # noqa: BLE001 — 仅影响来源标注
-            pass
-        if source == "平台/系统环境变量":
-            env_file = _env_file_values()
-            if name in env_file and str(env_file.get(name, "")).strip() == str(val).strip():
-                source = "项目 .env 文件"
-        _CONFIG_SOURCE[name] = source
-        return val
+    # ---------- 1) 云端 Secrets（权威来源，优先级最高）----------
     try:
         import streamlit as st  # 延迟导入：测试等非 Streamlit 环境不依赖
+
         secret = st.secrets.get(name)
         if secret is not None and str(secret).strip() != "":
             _CONFIG_SOURCE[name] = "云端 Secrets"
             return str(secret).strip()
-        _CONFIG_SOURCE[name] = "未配置"
-    except Exception as exc:  # noqa: BLE001 — 记录原因，不再静默
-        _CONFIG_SOURCE[name] = "读取失败"
-        msg = f"读取 Streamlit Secrets 失败：{type(exc).__name__}: {exc}"
-        if msg not in CONFIG_WARNINGS:
-            CONFIG_WARNINGS.append(msg)
+    except Exception as exc:  # noqa: BLE001 — 区分"未配置"与"真异常"
+        exc_name = type(exc).__name__.lower()
+        exc_msg = str(exc).lower()
+        if not ("secretnotfound" in exc_name or "no secrets found" in exc_msg):
+            # 真正的异常（如 Secrets 文件 TOML 语法错误）才告警；
+            # "没有 secrets.toml"属正常情况（本地开发），不报错。
+            # 告警后仍继续尝试环境变量兜底，避免因 Secrets 写错导致整站不可用。
+            _CONFIG_SOURCE[name] = "读取失败"
+            msg = f"读取 Streamlit Secrets 失败：{type(exc).__name__}: {exc}"
+            if msg not in CONFIG_WARNINGS:
+                CONFIG_WARNINGS.append(msg)
+
+    # ---------- 2) 环境变量（本地 .env / 平台注入）----------
+    val = os.getenv(name)
+    if val:
+        env_file = _env_file_values()
+        if name in env_file and str(env_file.get(name, "")).strip() == str(val).strip():
+            _CONFIG_SOURCE[name] = "项目 .env 文件"
+        else:
+            _CONFIG_SOURCE[name] = "平台/系统环境变量"
+        return val
+
+    # ---------- 3) 默认值 ----------
+    _CONFIG_SOURCE.setdefault(name, "未配置")
     return default
 
 
