@@ -665,6 +665,18 @@ def _find_task_for_record(rec: dict) -> Optional[dict]:
     return _match_task(rec)
 
 
+def _history_record_id(rec: dict) -> str:
+    """给一条历史记录生成唯一标识（用于文件名与 Streamlit 组件 key）。
+
+    为什么不能只用时间戳：演示数据里不同地块的记录可能落在同一时刻
+    （例如都记在 2026-10-03 09:00），只用时间戳会导致导出按钮 key 重复，
+    农户端「我的历史诊断」整页报错（实测踩过）。这里把地块也拼进来并清洗字符。
+    """
+    raw = f"{rec.get('plot_key') or rec.get('location') or ''}_{rec.get('timestamp') or ''}"
+    ident = re.sub(r"[^0-9A-Za-z\u4e00-\u9fa5]+", "_", raw).strip("_")
+    return (ident or "hist")[:48]
+
+
 def _history_export_text(rec: dict) -> tuple[str, str]:
     """返回（要导出的完整正文, 文件名主体）。
 
@@ -672,7 +684,7 @@ def _history_export_text(rec: dict) -> tuple[str, str]:
             ② 同地块工单里的完整 AI 报告（旧记录 / 从工单落库的情况）
             ③ 兜底：由已保存字段拼成的完整文档（绝不导出空文件）
     """
-    key = str(rec.get("timestamp") or "hist").replace(":", "").replace("-", "")[:14]
+    key = _history_record_id(rec)
     full = str(rec.get("content") or "").strip()
     if full:
         return full, f"农智链AgriAgent_诊断记录_{key}"
