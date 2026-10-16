@@ -200,3 +200,79 @@ def render_brief_html(items: list[str], *, title: str = "接下来这样做",
 
 def brief_total_chars(items: list[str]) -> int:
     return sum(len(x) for x in items)
+
+
+# =============================================================================
+# 管理端（农技员）专用：不加任何表情，重点加粗、风险点标红、章节自动编号
+# =============================================================================
+
+# 风险类关键词：命中即标红加粗，便于农技员一眼看到要害
+_DANGER_WORDS = (
+    "禁用", "严禁", "超标", "超范围", "未登记", "未核验", "高风险", "不得",
+    "违规", "违法", "立即停用", "应复核", "需复核", "禁止",
+    "不建议", "暂不推荐", "无明确", "未见明确", "需谨慎",
+)
+
+
+def emphasize_numbered(text: str) -> str:
+    """管理端摘要用：常规重点加粗；含风险关键词的整条标红加粗（无表情）。"""
+    t = emphasize_line(text)
+    if any(w in t for w in _DANGER_WORDS):
+        return f'<span style="color:#c62828;font-weight:700;">{t}</span>'
+    return t
+
+
+def render_numbered_html(items: list[str], *, title: str = "智能诊断摘要",
+                         cls: str = "ag-rpt-current") -> str:
+    """管理端摘要块：带序号（1./2./3.）、重点加粗、风险点标红、不含任何表情。"""
+    if not items:
+        return ""
+    lis = "".join(f"<li>{emphasize_numbered(x)}</li>" for x in items)
+    cls_attr = f"ag-rpt-advice-block {cls}".strip()
+    head = (f'<div class="ag-rpt-advice-title"><span class="bullet"></span>{title}</div>'
+            if title else "")
+    return f'<div class="{cls_attr}">{head}<ol class="ag-rpt-brief">{lis}</ol></div>'
+
+
+def emphasize_key_parts(text: str) -> str:
+    """报告正文重点加粗：剂量/间隔期等数字 + 风险关键词（用 Markdown 粗体，交给渲染层处理）。"""
+    out = []
+    for ln in (text or "").splitlines():
+        if ln.lstrip().startswith("#"):        # 标题已由渲染层加粗，不再叠加
+            out.append(ln)
+            continue
+        t = _DOSE_RE.sub(lambda m: f"**{m.group(0)}**", ln)
+        for w in _DANGER_WORDS:
+            if w in t and f"**{w}**" not in t:
+                t = t.replace(w, f"**{w}**")
+        out.append(t)
+    return "\n".join(out)
+
+
+def number_sections(text: str) -> str:
+    """给报告章节自动编号：一级章节 1. 2. 3.，子章节（1）（2）…（已有编号的不重复加）。"""
+    out: list[str] = []
+    n1 = n2 = 0
+    for raw in (text or "").splitlines():
+        m = re.match(r"^\s{0,3}(#{1,6})\s*(.+?)\s*$", raw)
+        if not m:
+            out.append(raw)
+            continue
+        level = len(m.group(1))
+        title = m.group(2).strip()
+        if re.match(r"^[（(]?\d+[）)、.]", title) or re.match(r"^[一二三四五六七八九十]+、", title):
+            out.append(raw)
+            continue
+        if level <= 3:
+            n1 += 1
+            n2 = 0
+            out.append(f"{m.group(1)} {n1}. {title}")
+        else:
+            n2 += 1
+            out.append(f"{m.group(1)} （{n2}）{title}")
+    return "\n".join(out)
+
+
+def format_report_for_review(content: str) -> str:
+    """管理端完整报告格式化：章节编号 + 重点加粗（药剂/剂量/风险词）。"""
+    return number_sections(emphasize_key_parts(content))

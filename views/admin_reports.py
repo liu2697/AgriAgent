@@ -27,6 +27,7 @@ def render() -> None:
             file_name=f"农智链AgriAgent_植保监测报告_{today}.md",
             mime="text/markdown",
             use_container_width=True,
+            key="rpt_export_md",
         )
     with c2:
         try:
@@ -37,6 +38,7 @@ def render() -> None:
                 file_name=f"农智链AgriAgent_植保监测报告_{today}.pdf",
                 mime="application/pdf",
                 use_container_width=True,
+                key="rpt_export_pdf",
             )
         except Exception:
             st.error("PDF 生成失败，请确认系统环境依赖")

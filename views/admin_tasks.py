@@ -195,13 +195,13 @@ def _render_task_detail(task: dict, tid: str) -> None:
         st.markdown("### 智能诊断结果")
         ai = task.get("ai_result", {})
         ai_content = ai.get("content", "_无诊断内容_")
-        # 摘要与农户端同源（components/advice_brief.py），保证两端看到一致的"下一步怎么做"；
-        # 大段完整话术折叠到右侧「完整 AI 诊断报告」里，需要时再展开。
-        from components.advice_brief import brief_next_steps, render_brief_html
+        # 农技员看不到农户界面，所以这里必须给出**具体内容**：序号 + 重点加粗 + 风险点标红（无表情）。
+        # 完整话术折叠在右侧「完整 AI 诊断报告」里，需要时展开。
+        from components.advice_brief import brief_next_steps, render_numbered_html
         steps = brief_next_steps(ai_content) or ["请结合完整报告与田间实况判断处置方案。"]
         st.markdown(
             '<div class="ag-rpt-advice">'
-            + render_brief_html(steps, title="下一步怎么做（与农户端一致）")
+            + render_numbered_html(steps, title="诊断摘要（重点已标注）")
             + "</div>",
             unsafe_allow_html=True,
         )
@@ -239,10 +239,16 @@ def _render_task_detail(task: dict, tid: str) -> None:
 
     # ========== 右侧：农技员审核区 ==========
     with col_right:
-        # ---- 完整 AI 诊断报告（大段话术折叠，需要时展开） ----
-        from components.markdown_helper import plain_report_html as _prh
-        with st.expander("展开完整 AI 诊断报告（含全部话术与依据）", expanded=False):
-            st.markdown(_prh(ai_content if ai_content.strip() else ""), unsafe_allow_html=True)
+        # ---- 完整 AI 诊断报告（大段话术折叠；章节编号 + 重点加粗，便于农技员快速定位） ----
+        # 注意：不能用 plain_report_html —— 它会剥掉行首编号与加粗标记；
+        # 这里用 normalize_md 规范化后交给 Streamlit 原生 Markdown 渲染，编号与加粗都能保留。
+        from components.markdown_helper import normalize_md
+        from components.advice_brief import format_report_for_review
+        with st.expander("展开完整 AI 诊断报告（已编号、重点加粗）", expanded=False):
+            st.markdown(
+                normalize_md(format_report_for_review(ai_content))
+                if ai_content.strip() else "（无诊断内容）"
+            )
 
         # ---- 农技员审核修改 ----
         st.markdown("### 农技员审核修改")

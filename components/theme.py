@@ -1479,6 +1479,20 @@ hr, .stDivider {{
     color: #1b5e20;
     font-weight: 700;
 }}
+/* 管理端：带序号的摘要（数字用主题色加粗，风险点由内联样式标红） */
+ol.ag-rpt-brief {{
+    padding-left: 1.45rem;
+}}
+ol.ag-rpt-brief li {{
+    line-height: 1.85;
+    margin-bottom: 0.38rem;
+    color: #37474f;
+    font-size: 0.86rem;
+}}
+ol.ag-rpt-brief li::marker {{
+    color: {t.brand};
+    font-weight: 700;
+}}
 
 .ag-rpt-risk-block {{
     border-left-color: {t.warning};

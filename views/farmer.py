@@ -337,32 +337,27 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
         unsafe_allow_html=True,
     )
 
-    # ---- P1-3：安全风险明细（高风险/审核未知时在醒目位置展示，不放折叠区）----
-    if safety_blocked or safety_unknown:
-        _render_safety_issues(review_issues, review_warnings)
-
     # ---- 处理建议 ----
     if safety_blocked:
-        # P1-3：未通过安全审核的原始建议——保留原文但放入明确的风险容器，禁止当作正常建议采纳
+        # 未通过安全审核的原始建议：按用户要求**不再套红色边框**，只保留顶部一句红色加粗提示，
+        # 正文仍完整保留（它是风险追踪证据，不能删减）。
         st.markdown(
             f"""
             <div class="ag-rpt-section">
                 <div class="ag-rpt-sec-head">
                     <span class="ag-rpt-sec-bar"></span>
-                    <span class="ag-rpt-sec-title">⚠ 未通过安全审核的原始建议（禁止直接采纳）</span>
+                    <span class="ag-rpt-sec-title">未通过安全审核的原始建议（禁止直接采纳）</span>
                 </div>
-                <div style="border:2px solid #d32f2f;border-radius:12px;background:#fff5f5;padding:0.7rem 0.5rem;margin-top:0.4rem;">
-                    <div style="color:#d32f2f;font-weight:700;margin:0 0.2rem 0.5rem;">
-                        ⛔ 以下为 AI 原始建议，未通过安全审核，仅作风险追踪证据，禁止作为处置依据直接采纳。
-                    </div>
-                    <div class="ag-rpt-advice">
-                        {_advice_block('ag-rpt-current', '原始防治方案（未通过审核）',
-                                       _extract_section(content, '防治') or '请参考报告正文中的防治建议。')}
-                        {_advice_block('ag-rpt-farm', '原始农事管理建议（未通过审核）',
-                                       _extract_section(content, '农事') or _extract_section(content, '管理') or '结合本地气候与作物生长阶段，科学灌溉、合理施肥、定期巡田。')}
-                        {_advice_block('ag-rpt-risk-block', '原始风险提示（未通过审核）',
-                                       _extract_section(content, '风险') or _extract_section(content, '注意') or '用药前请仔细阅读农药标签，严格按照推荐剂量和安全间隔期操作；如病情持续加重，请及时咨询当地农技人员。')}
-                    </div>
+                <div style="color:#d32f2f;font-weight:700;margin:0.25rem 0 0.5rem;">
+                    以下为 AI 原始建议，未通过安全审核，仅作风险追踪证据，禁止作为处置依据直接采纳。
+                </div>
+                <div class="ag-rpt-advice">
+                    {_advice_block('ag-rpt-current', '原始防治方案（未通过审核）',
+                                   _extract_section(content, '防治') or '请参考报告正文中的防治建议。')}
+                    {_advice_block('ag-rpt-farm', '原始农事管理建议（未通过审核）',
+                                   _extract_section(content, '农事') or _extract_section(content, '管理') or '结合本地气候与作物生长阶段，科学灌溉、合理施肥、定期巡田。')}
+                    {_advice_block('ag-rpt-risk-block', '原始风险提示（未通过审核）',
+                                   _extract_section(content, '风险') or _extract_section(content, '注意') or '用药前请仔细阅读农药标签，严格按照推荐剂量和安全间隔期操作；如病情持续加重，请及时咨询当地农技人员。')}
                 </div>
             </div>
             """,
@@ -397,7 +392,7 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
     _render_analysis_flow(plan_steps)
 
     # ---- 诊断依据 ----
-    _render_knowledge_basis(kb)
+    _render_knowledge_basis(kb, symptoms=symptoms, has_image=bool(image_bytes))
 
     # ---- 可信度评分 ----
     _render_confidence_card(result, crop, growth_stage, location, symptoms)
@@ -413,6 +408,10 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
     # ---- P1-3：完整安全审核记录（证据留存）----
     if safety_blocked or safety_unknown:
         _render_safety_record(result)
+
+    # ---- P1-3：安全风险明细（按用户要求放在页面最后，避免打断诊断结论的阅读顺序）----
+    if safety_blocked or safety_unknown:
+        _render_safety_issues(review_issues, review_warnings)
 
     # ---- 安全提示 ----
     st.markdown(
@@ -434,6 +433,7 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
             file_name=f"农智链AgriAgent_{crop}_{area}亩.md",
             mime="text/markdown",
             use_container_width=True,
+            key="rpt_download",
         )
     with b2:
         if st.button("提交农技员审核", use_container_width=True, key="rpt_submit"):
@@ -569,17 +569,72 @@ def _render_history_detail(rec: dict) -> None:
     risk = rec.get("risk_level") or "未知"
     # P1-3：历史高风险记录必须明确提示未通过安全审核（仅读取已存 risk_level）
     if risk == "高":
-        st.warning("⚠ 此诊断未通过安全审核：历史记录中的相关处置建议仅作为风险追踪信息，不应直接采纳。")
+        st.warning("此诊断未通过安全审核：历史记录中的相关处置建议仅作为风险追踪信息，不应直接采纳。")
     st.markdown(f"**诊断时间**　{fmt_cn_time(str(rec.get('timestamp') or ''))}")
     st.markdown(
         f"**地块信息**　{rec.get('location', '')} · {rec.get('crop', '')}"
         f" · {rec.get('growth_stage', '')} · {rec.get('area', '')}亩"
     )
-    st.markdown(f"**风险等级**　{risk} {risk_badge_html(risk)}")
+    st.markdown("**风险等级**")
+    # 修复：风险徽章是 HTML，之前未加 unsafe_allow_html，页面上会显示成一串标签源码（看起来像乱码）
+    st.markdown(f"{html.escape(str(risk))} {risk_badge_html(risk)}", unsafe_allow_html=True)
     st.markdown("**诊断结论/摘要**")
     st.markdown(rec.get("diagnosis_summary") or "（记录中无诊断摘要）")
-    st.markdown("**处理建议**")
-    st.markdown(rec.get("recommendation_summary") or "（记录中无处理建议）")
+    st.markdown("**未经审核的原始建议（AI 生成，尚未经农技员审核）**")
+    st.markdown(rec.get("recommendation_summary") or "（记录中无原始建议）")
+    _render_history_full_report(rec)
+
+
+def _ts_value(ts: str) -> float:
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat(str(ts)[:19]).timestamp()
+    except Exception:
+        return 0.0
+
+
+def _find_task_for_record(rec: dict) -> Optional[dict]:
+    """为该历史记录匹配对应工单（完整诊断报告只保存在工单里，历史表只存摘要）。"""
+    try:
+        pool = memory.list_tasks(plot_key=str(rec.get("plot_key") or ""), limit=20)
+    except Exception:
+        pool = []
+    if not pool:
+        try:
+            pool = memory.list_tasks(crop=str(rec.get("crop") or ""), limit=50)
+        except Exception:
+            pool = []
+    with_content = [t for t in pool if ((t.get("ai_result") or {}).get("content") or "").strip()]
+    if not with_content:
+        return None
+    rec_v = _ts_value(rec.get("timestamp") or "")
+    return min(with_content, key=lambda t: abs(_ts_value(t.get("create_time") or "") - rec_v))
+
+
+def _render_history_full_report(rec: dict) -> None:
+    """历史记录的完整报告：能找到关联工单就提供"查看 + 下载"，找不到就如实说明。"""
+    task = _find_task_for_record(rec)
+    content = (((task or {}).get("ai_result") or {}).get("content") or "").strip()
+    if not content:
+        st.caption("该历史记录仅保存诊断摘要，完整报告未留存。")
+        return
+    from components.markdown_helper import plain_report_html, strip_md
+    key = str(task.get("task_id") or rec.get("timestamp") or "hist")
+    with st.expander("查看完整诊断报告（可展开 / 可下载）", expanded=False):
+        st.markdown(plain_report_html(content), unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            st.download_button(
+                "下载完整报告（Markdown）", data=content.encode("utf-8"),
+                file_name=f"农智链AgriAgent_诊断报告_{key}.md", mime="text/markdown",
+                use_container_width=True, key=f"hist_md_{key}",
+            )
+        with c2:
+            st.download_button(
+                "下载纯文本", data=strip_md(content).encode("utf-8"),
+                file_name=f"农智链AgriAgent_诊断报告_{key}.txt", mime="text/plain",
+                use_container_width=True, key=f"hist_txt_{key}",
+            )
 
 
 def _render_my_history() -> None:
@@ -672,10 +727,28 @@ def _render_analysis_flow(plan_steps: list[dict]) -> None:
 # 辅助函数
 # =========================================================================
 
-def _render_knowledge_basis(kb: list[dict]) -> None:
-    """诊断依据：知识库命中条目（病害名 + 作物 + 典型症状）。"""
+def _render_knowledge_basis(kb: list[dict], *, symptoms: str = "",
+                            has_image: bool = False) -> None:
+    """诊断依据：知识库命中条目（病害名 + 作物 + 典型症状）。
+
+    按用户要求：农户未填写症状时，明确写出"农户未提及"，并交代结论依据什么得出
+    （图片视觉分析 + 知识库命中条目 / 作物与生育阶段信息），避免农户以为系统凭空判断。
+    """
     if not kb:
         return
+    note = ""
+    if not str(symptoms or "").strip():
+        basis = ("上传图片的视觉分析结果 + 知识库命中条目"
+                 if has_image else "作物、生育阶段等填写信息 + 知识库命中条目")
+        note = (
+            '<div style="background:#f1f8fd;border-left:3px solid #2196f3;'
+            'padding:0.45rem 0.6rem;margin-bottom:0.5rem;font-size:0.78rem;'
+            'color:#37474f;line-height:1.85;">'
+            '<b>农户未提及症状</b>：本次诊断没有收到症状描述，结论主要依据 '
+            f'{basis}（命中 {len(kb)} 条）推理得出；若能补充病斑颜色、形状、分布等信息，'
+            '结论会更准确。'
+            '</div>'
+        )
     rows = []
     for h in kb[:3]:
         disease = h.get("disease", "")
@@ -697,7 +770,7 @@ def _render_knowledge_basis(kb: list[dict]) -> None:
         f'<div class="ag-rpt-section">'
         f'<div class="ag-rpt-sec-head"><span class="ag-rpt-sec-bar"></span>'
         f'<span class="ag-rpt-sec-title">诊断依据</span></div>'
-        f'{"".join(rows)}</div>',
+        f'{note}{"".join(rows)}</div>',
         unsafe_allow_html=True,
     )
 
@@ -1461,15 +1534,35 @@ def _render_task_status_card(task_id: str) -> None:
     if published:
         st.success("农技员已完成审核　最终方案已生成")
         ai = task.get("ai_result", {})
-        with st.expander("查看审核结果", expanded=True):
-            st.markdown("AI 初步诊断")
+        final_diag = (task.get("final_diagnosis") or "").strip()
+        final_rec = (task.get("final_recommendation") or "").strip()
+        # 农户最关心的是农技员给的最终方案：放在最前、加粗标签、可直接下载；
+        # AI 初诊只作对照，折叠起来避免干扰。
+        st.markdown(
+            '<div class="ag-rpt-section">'
+            '<div class="ag-rpt-sec-head"><span class="ag-rpt-sec-bar"></span>'
+            '<span class="ag-rpt-sec-title">农技员最终方案</span></div>'
+            '<div style="font-size:0.86rem;line-height:2;color:#37474f;">'
+            f'<b>诊断结论</b>　{html.escape(final_diag) if final_diag else "未填写"}<br>'
+            f'<b>防治建议</b>　{html.escape(final_rec) if final_rec else "未填写"}<br>'
+            f'<b>审核时间</b>　{fmt_cn_time(task.get("publish_time", ""))}'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
+        plan_text = (
+            "# 农技员最终方案\n\n"
+            f"## 诊断结论\n{final_diag or '未填写'}\n\n"
+            f"## 防治建议\n{final_rec or '未填写'}\n\n"
+            f"审核时间：{fmt_cn_time(task.get('publish_time', ''))}\n"
+        )
+        st.download_button(
+            "下载最终方案", data=plan_text.encode("utf-8"),
+            file_name=f"农智链AgriAgent_最终方案_{_short_id(task_id)}.md",
+            mime="text/markdown", use_container_width=True, key=f"dl_final_{task_id}",
+        )
+        with st.expander("查看 AI 初步诊断（仅供对照）", expanded=False):
             from components.markdown_helper import plain_report_html
             st.markdown(plain_report_html(ai.get("content", "")), unsafe_allow_html=True)
-            st.markdown("农技员审核意见")
-            st.markdown(task.get("final_diagnosis") or "未填写")
-            st.markdown("最终防治建议")
-            st.markdown(task.get("final_recommendation") or "未填写")
-            st.markdown(f"审核时间　{fmt_cn_time(task.get('publish_time', ''))}")
     elif reviewing:
         st.info("农技员正在审核中，请稍后刷新本页查看结果。")
 
