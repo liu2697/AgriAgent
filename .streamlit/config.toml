@@ -5,3 +5,9 @@ maxUploadSize = 20
 
 [browser]
 gatherUsageStats = false
+
+[theme]
+# 主色改为品牌深绿：Streamlit 默认主色是红色，会让侧边栏「选择角色」单选框显示成红圈。
+# 项目内没有 checkbox / toggle / slider，主色只影响单选框（选择角色、监测功能）与加载动画，
+# 按钮等控件颜色由 components/theme.py 的自定义样式控制，不受此项影响。
+primaryColor = "#1F6B45"
