@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS diagnosis_records (
     location               TEXT NOT NULL DEFAULT '',
     diagnosis_summary      TEXT NOT NULL DEFAULT '',
     recommendation_summary TEXT NOT NULL DEFAULT '',
+    content                TEXT NOT NULL DEFAULT '',
     risk_level             TEXT NOT NULL DEFAULT '未知',
     note                   TEXT NOT NULL DEFAULT '',
     created_at             TEXT NOT NULL,
@@ -142,6 +143,19 @@ def init_db() -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with db_scope() as conn:
         conn.executescript(SCHEMA_SQL)
+        _ensure_columns(conn)
+
+
+def _ensure_columns(conn) -> None:
+    """增量迁移：给旧库补上后加的列（幂等，不影响已有数据）。
+
+    为什么需要：CREATE TABLE IF NOT EXISTS 对已存在的表不会新增列，
+    旧库缺少 diagnosis_records.content 时，历史诊断就只能导出被截断的摘要。
+    """
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(diagnosis_records)")}
+    if "content" not in cols:
+        conn.execute("ALTER TABLE diagnosis_records "
+                     "ADD COLUMN content TEXT NOT NULL DEFAULT ''")
 
 
 def check_database() -> dict:

@@ -55,8 +55,12 @@ def _plot_key(location: str, crop: str, area: float) -> str:
 
 def record_visit(location: str, crop: str, growth_stage: str, area: float,
                  diagnosis: str, recommendation: str, note: str = "",
-                 risk_level: str = "") -> dict:
-    """将本次诊断结果写入 SQLite（diagnosis_records 表），并同步地块基础信息。"""
+                 risk_level: str = "", content: str = "") -> dict:
+    """将本次诊断结果写入 SQLite（diagnosis_records 表），并同步地块基础信息。
+
+    content 保存**完整诊断报告**：历史诊断的"导出记录"要用它，
+    否则只能导出被截断的摘要（用户实测导出内容只有半截，就是缺这一列）。
+    """
     key = _plot_key(location, crop, area)
     entry = {
         "timestamp": iso_now(),
@@ -66,6 +70,7 @@ def record_visit(location: str, crop: str, growth_stage: str, area: float,
         "location": location,
         "diagnosis_summary": diagnosis[:120],
         "recommendation_summary": recommendation[:200],
+        "content": content or "",
         "risk_level": risk_level or "未知",
         "note": note,
     }

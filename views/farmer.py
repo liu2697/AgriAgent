@@ -364,15 +364,38 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
             unsafe_allow_html=True,
         )
     else:
-        # 农户端只给"下一步怎么做"（生成内容压缩到 80–100 字，特殊情况下由兜底文案兜着）；
-        # 完整话术仍保留在下方「查看完整诊断报告」折叠区，需要时展开。
+        # ① 未经审核的原始建议（按用户要求恢复上一版形式，放在摘要上方）
+        st.markdown(
+            f"""
+            <div class="ag-rpt-section">
+                <div class="ag-rpt-sec-head">
+                    <span class="ag-rpt-sec-bar"></span>
+                    <span class="ag-rpt-sec-title">未经审核的原始建议（AI 生成，尚未经农技员审核）</span>
+                </div>
+                <div class="ag-rpt-advice">
+                    {_advice_block('ag-rpt-current', '防治方案',
+                                   _extract_section(content, '防治') or '请参考报告正文中的防治建议。')}
+                    {_advice_block('ag-rpt-farm', '农事管理建议',
+                                   _extract_section(content, '农事') or _extract_section(content, '管理') or '结合本地气候与作物生长阶段，科学灌溉、合理施肥、定期巡田。')}
+                    {_advice_block('ag-rpt-risk-block', '风险提示',
+                                   _extract_section(content, '风险') or _extract_section(content, '注意') or '用药前请仔细阅读农药标签，严格按照推荐剂量和安全间隔期操作；如病情持续加重，请及时咨询当地农技人员。')}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # ② 精简摘要（80–100 字）：「建议接下来这样做」
         steps = brief_next_steps(content) or ["按报告中已核验的药剂方案施药，7 天后复查；如有疑问请咨询当地农技人员。"]
         st.markdown(
             f"""
             <div class="ag-rpt-section">
                 <div class="ag-rpt-sec-head">
                     <span class="ag-rpt-sec-bar"></span>
-                    <span class="ag-rpt-sec-title">接下来这样做</span>
+                    <span class="ag-rpt-sec-title">建议接下来这样做</span>
+                </div>
+                <div style="color:#8d6e63;font-size:0.78rem;margin:0.15rem 0 0.45rem;">
+                    本部分由 AI 生成，有时会出错，请甄别后采纳。
                 </div>
                 <div class="ag-rpt-advice">
                     {render_brief_html(steps)}
@@ -578,15 +601,13 @@ def _render_history_detail(rec: dict) -> None:
     st.markdown("**风险等级**")
     # 修复：风险徽章是 HTML，之前未加 unsafe_allow_html，页面上会显示成一串标签源码（看起来像乱码）
     st.markdown(f"{html.escape(str(risk))} {risk_badge_html(risk)}", unsafe_allow_html=True)
-    # 诊断结论/摘要 + 导出记录（按用户要求：只放按钮，不展示报告正文）
-    c_head, c_btn = st.columns([3, 1])
-    with c_head:
-        st.markdown("**诊断结论/摘要**")
-    with c_btn:
-        _history_export_button(rec)
+    # 诊断结论/摘要 + 未经审核的原始建议（页面只展示摘要，完整报告用下方按钮导出）
+    st.markdown("**诊断结论/摘要**")
     st.markdown(rec.get("diagnosis_summary") or "（记录中无诊断摘要）")
     st.markdown("**未经审核的原始建议（AI 生成，尚未经农技员审核）**")
     st.markdown(rec.get("recommendation_summary") or "（记录中无原始建议）")
+    st.markdown("**导出记录**")
+    _history_export_button(rec)
 
 
 def _ts_value(ts: str) -> float:
@@ -615,30 +636,40 @@ def _find_task_for_record(rec: dict) -> Optional[dict]:
     return min(with_content, key=lambda t: abs(_ts_value(t.get("create_time") or "") - rec_v))
 
 
-def _history_export_button(rec: dict) -> None:
-    """「导出记录」按钮：直接导出该条历史记录的完整报告（找不到完整报告时导出摘要）。
+def _history_export_text(rec: dict) -> tuple[str, str]:
+    """返回（要导出的完整正文, 文件名主体）。
 
-    按用户要求：只放按钮、不在页面上展示报告正文。
+    优先级：① 历史记录里保存的完整报告（新版本起随诊断一起落库）
+            ② 同地块工单里的完整 AI 报告（旧记录 / 从工单落库的情况）
+            ③ 兜底：由已保存字段拼成的完整文档（绝不导出空文件）
     """
+    key = str(rec.get("timestamp") or "hist").replace(":", "").replace("-", "")[:14]
+    full = str(rec.get("content") or "").strip()
+    if full:
+        return full, f"农智链AgriAgent_诊断记录_{key}"
+
     task = _find_task_for_record(rec)
-    content = (((task or {}).get("ai_result") or {}).get("content") or "").strip()
-    if not content:
-        # 兜底：导出已保存的摘要（保证按钮永远可用）
-        content = (
-            "# 农智链AgriAgent 诊断记录\n\n"
-            f"诊断时间：{fmt_cn_time(str(rec.get('timestamp') or ''))}\n"
-            f"地块信息：{rec.get('location', '')} · {rec.get('crop', '')}"
-            f" · {rec.get('growth_stage', '')} · {rec.get('area', '')}亩\n"
-            f"风险等级：{rec.get('risk_level') or '未知'}\n\n"
-            f"## 诊断结论/摘要\n{rec.get('diagnosis_summary') or '（无）'}\n\n"
-            f"## 未经审核的原始建议\n{rec.get('recommendation_summary') or '（无）'}\n"
-        )
-    key = str((task or {}).get("task_id") or rec.get("timestamp") or "hist")
-    st.download_button(
-        "导出记录", data=content.encode("utf-8"),
-        file_name=f"农智链AgriAgent_诊断记录_{key}.md", mime="text/markdown",
-        use_container_width=True, key=f"hist_export_{key}",
+    full = (((task or {}).get("ai_result") or {}).get("content") or "").strip()
+    if full:
+        return full, f"农智链AgriAgent_诊断记录_{key}"
+
+    fallback = (
+        "# 农智链AgriAgent 诊断记录\n\n"
+        f"诊断时间：{fmt_cn_time(str(rec.get('timestamp') or ''))}\n"
+        f"地块信息：{rec.get('location', '')} · {rec.get('crop', '')}"
+        f" · {rec.get('growth_stage', '')} · {rec.get('area', '')}亩\n"
+        f"风险等级：{rec.get('risk_level') or '未知'}\n\n"
+        f"## 诊断结论/摘要\n{rec.get('diagnosis_summary') or '（无）'}\n\n"
+        f"## 未经审核的原始建议\n{rec.get('recommendation_summary') or '（无）'}\n"
     )
+    return fallback, f"农智链AgriAgent_诊断记录_{key}"
+
+
+def _history_export_button(rec: dict) -> None:
+    """「导出记录」：直接导出该条历史记录的完整报告（Word / PDF / 纯文本），页面不展示正文。"""
+    text, stem = _history_export_text(rec)
+    from components.export_buttons import render_export_buttons
+    render_export_buttons(text, stem=stem, key_prefix=f"hist_{stem}")
 
 
 def _render_my_history() -> None:
@@ -1559,10 +1590,11 @@ def _render_task_status_card(task_id: str) -> None:
             f"## 防治建议\n{final_rec or '未填写'}\n\n"
             f"审核时间：{fmt_cn_time(task.get('publish_time', ''))}\n"
         )
-        st.download_button(
-            "下载最终方案", data=plan_text.encode("utf-8"),
-            file_name=f"农智链AgriAgent_最终方案_{_short_id(task_id)}.md",
-            mime="text/markdown", use_container_width=True, key=f"dl_final_{task_id}",
+        from components.export_buttons import render_export_buttons
+        render_export_buttons(
+            plan_text,
+            stem=f"农智链AgriAgent_最终方案_{_short_id(task_id)}",
+            key_prefix=f"final_{task_id}",
         )
         with st.expander("查看 AI 初步诊断（仅供对照）", expanded=False):
             from components.markdown_helper import plain_report_html

@@ -170,7 +170,7 @@ def count_plots() -> int:
 
 _DIAG_COLS = ("plot_key", "timestamp", "crop", "growth_stage", "area",
               "location", "diagnosis_summary", "recommendation_summary",
-              "risk_level", "note")
+              "content", "risk_level", "note")
 
 
 def create_diagnosis(plot_key: str, entry: dict) -> int:
@@ -184,14 +184,14 @@ def create_diagnosis(plot_key: str, entry: dict) -> int:
             """
             INSERT OR IGNORE INTO diagnosis_records
                 (plot_key, timestamp, crop, growth_stage, area, location,
-                 diagnosis_summary, recommendation_summary, risk_level,
+                 diagnosis_summary, recommendation_summary, content, risk_level,
                  note, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (vals["plot_key"], vals["timestamp"], vals["crop"],
              vals["growth_stage"], vals["area"], vals["location"],
              vals["diagnosis_summary"], vals["recommendation_summary"],
-             vals["risk_level"] or "未知", vals["note"], now),
+             vals["content"], vals["risk_level"] or "未知", vals["note"], now),
         )
         return cur.lastrowid
 

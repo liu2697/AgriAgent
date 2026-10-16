@@ -11,11 +11,11 @@ class MemoryService:
 
     def record_visit(self, location: str, crop: str, growth_stage: str, area: float,
                      diagnosis: str, recommendation: str, note: str = "",
-                     risk_level: str = "") -> dict:
+                     risk_level: str = "", content: str = "") -> dict:
         return _memory.record_visit(
             location=location, crop=crop, growth_stage=growth_stage,
             area=area, diagnosis=diagnosis, recommendation=recommendation,
-            note=note, risk_level=risk_level,
+            note=note, risk_level=risk_level, content=content,
         )
 
     def get_history(self, location: str, crop: str, area: float, limit: int = 5) -> list[dict]:

@@ -446,6 +446,7 @@ class Executor:
                 recommendation="\n".join(summary_lines[1:4]),
                 note="AGENT_V2",
                 risk_level=review_result.risk_level if review_result else "",
+                content=llm_result["content"],   # 保存完整报告，供历史诊断导出
             )
             step.detail = f"已写入地块记忆（{record['plot_key']}）"
             step.status = "done"
