@@ -12,6 +12,7 @@ from config import CROPS, SOIL_TYPES, GROWTH_STAGES, APP_NAME, APP_SUBTITLE
 from agent import AgriAgent, AgentStep
 from memory import history as memory
 from components import risk_badge_html
+from components.advice_brief import brief_next_steps, render_brief_html
 from components.symptom_chips import CHIP_LABELS, build_symptom_text
 from components.layout import fmt_cn_time, flow_steps_html, task_status_display
 
@@ -368,20 +369,18 @@ def _render_result(result, *, crop, growth_stage, area, soil_type, location,
             unsafe_allow_html=True,
         )
     else:
+        # 农户端只给"下一步怎么做"（生成内容压缩到 80–100 字，特殊情况下由兜底文案兜着）；
+        # 完整话术仍保留在下方「查看完整诊断报告」折叠区，需要时展开。
+        steps = brief_next_steps(content) or ["按报告中已核验的药剂方案施药，7 天后复查；如有疑问请咨询当地农技人员。"]
         st.markdown(
             f"""
             <div class="ag-rpt-section">
                 <div class="ag-rpt-sec-head">
                     <span class="ag-rpt-sec-bar"></span>
-                    <span class="ag-rpt-sec-title">处理建议</span>
+                    <span class="ag-rpt-sec-title">接下来这样做</span>
                 </div>
                 <div class="ag-rpt-advice">
-                    {_advice_brief_block('ag-rpt-current', '防治方案',
-                                         _extract_section(content, '防治') or '请参考报告正文中的防治建议。', max_items=3)}
-                    {_advice_brief_block('ag-rpt-farm', '农事管理建议',
-                                         _extract_section(content, '农事') or _extract_section(content, '管理') or '结合本地气候与作物生长阶段，科学灌溉、合理施肥、定期巡田。', max_items=3)}
-                    {_advice_brief_block('ag-rpt-risk-block', '风险提示',
-                                         _extract_section(content, '风险') or _extract_section(content, '注意') or '用药前请仔细阅读农药标签，严格按照推荐剂量和安全间隔期操作；如病情持续加重，请及时咨询当地农技人员。', max_items=3)}
+                    {render_brief_html(steps)}
                 </div>
             </div>
             """,
@@ -752,83 +751,8 @@ def _advice_block(cls: str, title: str, body: str) -> str:
     )
 
 
-# 判断一条建议是否为"有具体内容"的动作句（用于过滤小标题/纯标签行）
-_ACTION_WORDS = (
-    "喷", "施", "用药", "防治", "清除", "清理", "轮换", "控制", "增施", "追肥", "灌溉",
-    "排水", "巡查", "监测", "复查", "咨询", "间隔", "稀释", "兑水", "摘除", "翻耕",
-    "选", "使用", "避免", "注意", "及时", "加强", "保持",
-)
-
-
-def _brief_items(text: str, max_items: int = 4, max_len: int = 40) -> list[str]:
-    """把 AI 长段建议压成"农户一眼能看完"的要点（最多 max_items 条、每条 ≤ max_len 字）。
-
-    为什么压缩：诊断报告正文是给农技员看的（含多种药剂对比、剂量、间隔期、补充观察项等），
-    整段展示给农户会冗长、抓不住重点。这里只保留**能直接照做的动作句**，
-    并过滤掉"化学防治""（1）可选用药剂："这类没有具体内容的小标题；
-    完整原文仍保留在「查看完整诊断报告」折叠区，需要时点开可查。
-    """
-    clean = _clean_markdown(text or "")
-    items: list[str] = []
-    for raw in clean.splitlines():
-        ln = raw.strip(" \t-—•·*>#")
-        # 去掉行首编号（（1）/(1)/1./1、/① 等）：列表本身已用圆点，编号对农户只是噪声
-        ln = re.sub(r"^[（(]?\d{1,2}[）)、.．:：]\s*", "", ln)
-        ln = re.sub(r"^[①②③④⑤⑥⑦⑧⑨⑩]\s*", "", ln).strip()
-        if len(ln) < 6:
-            continue                                   # 过短：多为小标题
-        if ln.endswith(("：", ":")) and len(ln) <= 32:
-            continue                                   # 纯标签行（无具体做法）
-        has_num = bool(re.search(r"\d", ln))
-        has_action = any(w in ln for w in _ACTION_WORDS)
-        if not has_num and not has_action and len(ln) < 20:
-            continue                                   # 既无数字也无动作词 → 小标题
-        if len(ln) > max_len:
-            cut = max(ln.rfind(p, 0, max_len) for p in "。；;，,、")
-            ln = (ln[:cut] if cut >= 12 else ln[:max_len]).rstrip("，,、；;") + "…"
-        items.append(ln)
-        if len(items) >= max_items:
-            break
-    return items
-
-
-def _emphasize(text: str) -> str:
-    """给要点加粗重点，只在"确定是重点"时才加粗，避免把整句散文误加粗：
-
-    1. 行首为「标签：」形式（冒号在前 16 字内）→ 加粗标签，如「轻度：减产 5–10%」；
-    2. 药剂名形式「三唑酮（…）」→ 加粗短名称；
-    3. 剂量 / 间隔期 / 比例等关键数字（含 8-10 克、5–10% 这类区间）一律加粗。
-    """
-    t = html.escape(text)
-    colon = min([i for i in (t.find("："), t.find(":")) if i != -1], default=-1)
-    # 仅当冒号在前 16 字内、且标签本身不含逗号/句号时才当作"标签"加粗（否则是散文，不加粗）
-    if 0 < colon <= 16 and not re.search(r"[，,。；;、]", t[:colon]):
-        t = f"<strong>{t[:colon]}</strong>" + t[colon:]
-    else:
-        m = re.match(r"^([^：:（(，,。；;、\s]{2,6})[（(]", t)
-        if m:
-            t = f"<strong>{m.group(1)}</strong>" + t[m.end(1):]
-    t = re.sub(
-        r"(\d+(?:\.\d+)?(?:\s*[-–~至到]\s*\d+(?:\.\d+)?)?\s*"
-        r"(?:克|千克|公斤|毫升|升|亩|天|次|倍|%|g|ml|L))",
-        r"<strong>\1</strong>", t,
-    )
-    return t
-
-
-def _advice_brief_block(cls: str, title: str, body: str, max_items: int = 4) -> str:
-    """精简版建议块（农户端常规展示用）：圆点要点 + 重点加粗 + 宽松行距。"""
-    items = _brief_items(body, max_items=max_items)
-    if not items:
-        return ""
-    lis = "".join(f"<li>{_emphasize(x)}</li>" for x in items)
-    cls_html = f" ag-rpt-advice-block {cls}" if cls else " ag-rpt-advice-block"
-    return (
-        f'<div class="{cls_html.strip()}">'
-        f'<div class="ag-rpt-advice-title"><span class="bullet"></span>{title}</div>'
-        f'<ul class="ag-rpt-brief">{lis}</ul>'
-        f'</div>'
-    )
+# 说明：农户端"接下来这样做"的精简摘要（80–100 字）由 components/advice_brief.py 统一提供，
+# 农技员端复用同一份实现，保证两端内容一致（见 views/admin_tasks.py）。
 
 
 # =========================================================================

@@ -195,8 +195,16 @@ def _render_task_detail(task: dict, tid: str) -> None:
         st.markdown("### 智能诊断结果")
         ai = task.get("ai_result", {})
         ai_content = ai.get("content", "_无诊断内容_")
-        from components.markdown_helper import plain_report_html
-        st.markdown(plain_report_html(ai_content), unsafe_allow_html=True)
+        # 摘要与农户端同源（components/advice_brief.py），保证两端看到一致的"下一步怎么做"；
+        # 大段完整话术折叠到右侧「完整 AI 诊断报告」里，需要时再展开。
+        from components.advice_brief import brief_next_steps, render_brief_html
+        steps = brief_next_steps(ai_content) or ["请结合完整报告与田间实况判断处置方案。"]
+        st.markdown(
+            '<div class="ag-rpt-advice">'
+            + render_brief_html(steps, title="下一步怎么做（与农户端一致）")
+            + "</div>",
+            unsafe_allow_html=True,
+        )
 
         st.markdown("### 工单信息")
         info_rows = [
@@ -231,10 +239,10 @@ def _render_task_detail(task: dict, tid: str) -> None:
 
     # ========== 右侧：农技员审核区 ==========
     with col_right:
-        # ---- 智能诊断预览（只读 · 正式报告形式） ----
-        st.markdown("### 智能诊断预览")
+        # ---- 完整 AI 诊断报告（大段话术折叠，需要时展开） ----
         from components.markdown_helper import plain_report_html as _prh
-        st.markdown(_prh(ai_content if ai_content.strip() else ""), unsafe_allow_html=True)
+        with st.expander("展开完整 AI 诊断报告（含全部话术与依据）", expanded=False):
+            st.markdown(_prh(ai_content if ai_content.strip() else ""), unsafe_allow_html=True)
 
         # ---- 农技员审核修改 ----
         st.markdown("### 农技员审核修改")
