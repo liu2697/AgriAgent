@@ -602,6 +602,16 @@ def _render_history_detail(rec: dict) -> None:
     st.markdown("**风险等级**")
     # 修复：风险徽章是 HTML，之前未加 unsafe_allow_html，页面上会显示成一串标签源码（看起来像乱码）
     st.markdown(f"{html.escape(str(risk))} {risk_badge_html(risk)}", unsafe_allow_html=True)
+    # 对应工单编号与状态（农户据此到「审核进度查询」查进度）
+    order_short, order_status = _record_task_info(rec)
+    st.markdown("**工单编号**")
+    if order_short:
+        st.markdown(
+            f"{html.escape(order_short)}　状态　{html.escape(task_status_display(order_status))}"
+            "　（可在下方「审核进度查询」查看审核进度）"
+        )
+    else:
+        st.caption("未提交农技员审核（仅本地诊断记录）")
     # 诊断结论/摘要 + 未经审核的原始建议（页面只展示摘要，完整报告用下方按钮导出）
     # 展示前统一去掉 Markdown 记号，避免页面上出现落单的 # / *
     st.markdown("**诊断结论/摘要**")
@@ -620,22 +630,39 @@ def _ts_value(ts: str) -> float:
         return 0.0
 
 
-def _find_task_for_record(rec: dict) -> Optional[dict]:
-    """为该历史记录匹配对应工单（完整诊断报告只保存在工单里，历史表只存摘要）。"""
+def _match_task(rec: dict) -> Optional[dict]:
+    """为该历史诊断记录匹配对应工单（用于显示工单编号与导出完整报告）。
+
+    匹配规则（保守，避免张冠李戴）：
+      ① 同地块工单中，创建时间与该记录时间相差 ≤30 分钟的（农户诊断后很快提交审核）；
+      ② 若该地块只有一条工单，则直接对应（演示数据或跨天提交时时间可能不吻合）。
+    两条都不满足时返回 None —— 宁可显示"未提交审核"，也不配错工单。
+    """
     try:
-        pool = memory.list_tasks(plot_key=str(rec.get("plot_key") or ""), limit=20)
+        tasks = memory.list_tasks(plot_key=str(rec.get("plot_key") or ""), limit=20)
     except Exception:
-        pool = []
-    if not pool:
-        try:
-            pool = memory.list_tasks(crop=str(rec.get("crop") or ""), limit=50)
-        except Exception:
-            pool = []
-    with_content = [t for t in pool if ((t.get("ai_result") or {}).get("content") or "").strip()]
-    if not with_content:
+        return None
+    if not tasks:
         return None
     rec_v = _ts_value(rec.get("timestamp") or "")
-    return min(with_content, key=lambda t: abs(_ts_value(t.get("create_time") or "") - rec_v))
+    within = [t for t in tasks
+              if abs(_ts_value(t.get("create_time") or "") - rec_v) <= 1800]
+    if within:
+        return min(within, key=lambda t: abs(_ts_value(t.get("create_time") or "") - rec_v))
+    return tasks[0] if len(tasks) == 1 else None
+
+
+def _record_task_info(rec: dict) -> tuple[str, str]:
+    """返回该历史记录对应工单的（短编号, 状态）；没有对应工单时返回 ("", "")。"""
+    task = _match_task(rec)
+    if not task:
+        return "", ""
+    return _short_id(str(task.get("task_id") or "")), str(task.get("status") or "待审核")
+
+
+def _find_task_for_record(rec: dict) -> Optional[dict]:
+    """兼容旧调用：返回该历史记录对应的完整工单 dict（导出完整报告用）。"""
+    return _match_task(rec)
 
 
 def _history_export_text(rec: dict) -> tuple[str, str]:
@@ -712,6 +739,16 @@ def _render_my_history() -> None:
         risk = rec.get("risk_level") or "未知"
         summary = _clean_markdown(str(rec.get("diagnosis_summary") or ""))
         preview = summary.splitlines()[0][:40] if summary else ""
+        # 工单编号 + 当前状态：农户可拿这个编号到「审核进度查询」查进度
+        order_short, order_status = _record_task_info(rec)
+        if order_short:
+            order_html = (
+                f'工单编号 <b style="color:#1F6B45;">{html.escape(order_short)}</b>'
+                f'　状态　{html.escape(task_status_display(order_status))}'
+                f'　<span style="color:#90a4ae;">（可在下方「审核进度查询」查看审核进度）</span>'
+            )
+        else:
+            order_html = '<span style="color:#90a4ae;">未提交农技员审核（仅本地诊断记录）</span>'
         st.markdown(
             f"""
             <div class="ag-rpt-section">
@@ -723,8 +760,11 @@ def _render_my_history() -> None:
                     <span class="ag-flow-mark">✓</span>
                     <span class="ag-flow-name">{html.escape(str(rec.get('location') or ''))} · {html.escape(str(rec.get('crop') or ''))} · {rec.get('area', '')}亩</span>
                 </div>
-                <div style="font-size:0.78rem;color:#546e7a;padding:0 0.2rem 0.45rem 1.75rem;">
+                <div style="font-size:0.78rem;color:#546e7a;padding:0 0.2rem 0.32rem 1.75rem;">
                     {html.escape(preview)}　{risk_badge_html(risk)}
+                </div>
+                <div style="font-size:0.76rem;color:#37474f;padding:0 0.2rem 0.45rem 1.75rem;">
+                    {order_html}
                 </div>
             </div>
             """,
