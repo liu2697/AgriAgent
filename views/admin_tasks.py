@@ -178,26 +178,37 @@ def _render_task_row(task: dict) -> None:
 
 
 def _render_task_detail(task: dict, tid: str) -> None:
-    col_left, col_right = st.columns([1, 1.3], gap="large")
+    ai = task.get("ai_result", {})
+    ai_content = ai.get("content", "_无诊断内容_")
+    from components.advice_brief import brief_next_steps, render_numbered_html
 
-    # ========== 左侧：农户上报信息（只读） ==========
+    # ========== 第 1 行：左 = 农户图片 + 智能诊断结果；右 = 工单信息（左右对齐） ==========
+    col_left, col_right = st.columns([1, 1.05], gap="large")
+
     with col_left:
         st.markdown("### 农户图片")
         img_bytes = memory.get_task_image_bytes(tid)
+        shown = False
         if img_bytes:
             try:
-                st.image(Image.open(io.BytesIO(img_bytes)), use_container_width=True)
+                img = Image.open(io.BytesIO(img_bytes))
+                if img.height > 320:      # 限高：保证左右两栏高度接近，避免大面积留白
+                    img = img.resize((max(1, int(img.width * 320 / img.height)), 320))
+                st.image(img, use_container_width=True)
+                shown = True
             except Exception:
                 st.info("图片已损坏")
-        else:
-            st.info("农户未上传图片")
+        if not shown:
+            # 无图片时用等高占位框，保证"不管有没有图片"左右都对齐
+            st.markdown(
+                '<div style="min-height:212px;border:1px dashed #cfd8dc;border-radius:8px;'
+                'display:flex;align-items:center;justify-content:center;color:#90a4ae;'
+                'font-size:0.82rem;background:#fafbfc;">农户未上传图片</div>',
+                unsafe_allow_html=True,
+            )
 
         st.markdown("### 智能诊断结果")
-        ai = task.get("ai_result", {})
-        ai_content = ai.get("content", "_无诊断内容_")
         # 农技员看不到农户界面，所以这里必须给出**具体内容**：序号 + 重点加粗 + 风险点标红（无表情）。
-        # 完整话术折叠在右侧「完整 AI 诊断报告」里，需要时展开。
-        from components.advice_brief import brief_next_steps, render_numbered_html
         steps = brief_next_steps(ai_content) or ["请结合完整报告与田间实况判断处置方案。"]
         st.markdown(
             '<div class="ag-rpt-advice">'
@@ -206,6 +217,7 @@ def _render_task_detail(task: dict, tid: str) -> None:
             unsafe_allow_html=True,
         )
 
+    with col_right:
         st.markdown("### 工单信息")
         info_rows = [
             ("工单编号", _short_id(tid)),
@@ -237,118 +249,130 @@ def _render_task_detail(task: dict, tid: str) -> None:
             unsafe_allow_html=True,
         )
 
-    # ========== 右侧：农技员审核区 ==========
-    with col_right:
-        # ---- 完整 AI 诊断报告（大段话术折叠；章节编号 + 重点加粗，便于农技员快速定位） ----
-        # 注意：不能用 plain_report_html —— 它会剥掉行首编号与加粗标记；
-        # 这里用 normalize_md 规范化后交给 Streamlit 原生 Markdown 渲染，编号与加粗都能保留。
-        from components.markdown_helper import normalize_md
-        from components.advice_brief import format_report_for_review
-        with st.expander("展开完整 AI 诊断报告（已编号、重点加粗）", expanded=False):
-            st.markdown(
-                normalize_md(format_report_for_review(ai_content))
-                if ai_content.strip() else "（无诊断内容）"
-            )
+    # ========== 第 2 行：完整 AI 诊断报告（全宽折叠；章节编号 + 重点加粗） ==========
+    # 注意：不能用 plain_report_html —— 它会剥掉行首编号与加粗标记；
+    # 这里用 normalize_md 规范化后交给 Streamlit 原生 Markdown 渲染，编号与加粗都能保留。
+    from components.markdown_helper import normalize_md
+    from components.advice_brief import format_report_for_review
+    with st.expander("展开完整 AI 诊断报告（已编号、重点加粗）", expanded=False):
+        st.markdown(
+            normalize_md(format_report_for_review(ai_content))
+            if ai_content.strip() else "（无诊断内容）"
+        )
 
-        # ---- 农技员审核修改 ----
-        st.markdown("### 农技员审核修改")
+    # ========== 第 3 行：农技员审核修改（横向分布，占满整宽） ==========
+    st.markdown("### 农技员审核修改")
 
+    c_who, _c_blank = st.columns([1, 2.2])
+    with c_who:
         reviewer = st.text_input(
             "审核人",
             value=task.get("reviewer", "") or st.session_state.get("tech_name", ""),
             key=f"reviewer_{tid}",
         )
 
+    c_diag, c_rec = st.columns(2, gap="large")
+    with c_diag:
         final_diagnosis = st.text_area(
             "最终诊断结论",
             value=task.get("final_diagnosis", ""),
-            height=160,
-            placeholder="基于上方智能诊断，填写审核后的正式结论。留空表示沿用系统结果。",
+            height=210,
+            placeholder="基于左侧智能诊断，填写审核后的正式结论。留空表示沿用系统结果。",
             key=f"diag_{tid}",
         )
         if final_diagnosis.strip():
             _render_md_preview("诊断结论预览", final_diagnosis)
-
+    with c_rec:
         final_recommendation = st.text_area(
             "最终防治建议",
             value=task.get("final_recommendation", ""),
-            height=200,
+            height=210,
             placeholder="填写经过安全审核的正式防治建议　药剂选型 剂量 施药时机 注意事项……",
             key=f"rec_{tid}",
         )
         if final_recommendation.strip():
             _render_md_preview("防治建议预览", final_recommendation)
 
-        review_notes = st.text_area(
-            "审核备注（内部）",
-            value=task.get("review_notes", ""),
-            height=80,
-            placeholder="记录审核过程 与系统结果的差异 是否需要复查……",
-            key=f"notes_{tid}",
-        )
+    review_notes = st.text_area(
+        "审核备注（内部）",
+        value=task.get("review_notes", ""),
+        height=80,
+        placeholder="记录审核过程 与系统结果的差异 是否需要复查……",
+        key=f"notes_{tid}",
+    )
 
-        st.divider()
+    st.divider()
 
-        btn1, btn2, btn3, btn4 = st.columns(4)
+    btn1, btn2, btn3, btn4 = st.columns(4)
 
-        with btn1:
-            if st.button("保存审核", key=f"btn_save_{tid}"):
-                ok = memory.save_task_review(
+    with btn1:
+        if st.button("保存审核", key=f"btn_save_{tid}"):
+            ok = memory.save_task_review(
+                tid, reviewer=reviewer.strip(),
+                final_diagnosis=final_diagnosis.strip(),
+                final_recommendation=final_recommendation.strip(),
+                review_notes=review_notes.strip(),
+            )
+            if ok:
+                st.success("已保存审核，工单状态更新为审核中")
+                st.rerun()
+            else:
+                st.error("保存失败：审核内容未能写入数据库，请重试")
+
+    with btn2:
+        if st.button("发布给农户", key=f"btn_pub_{tid}"):
+            if not final_diagnosis.strip() and not final_recommendation.strip():
+                st.error("发布前请先填写诊断结论或防治建议")
+            else:
+                # 关键修复：发布前先把表单内容落库。
+                # 原实现直接调用 publish_task()，而它读的是**数据库里已保存的**结论/建议，
+                # 没点过「保存审核」时数据库为空 → 必然返回 False → 显示"发布失败"。
+                saved = memory.save_task_review(
                     tid, reviewer=reviewer.strip(),
                     final_diagnosis=final_diagnosis.strip(),
                     final_recommendation=final_recommendation.strip(),
                     review_notes=review_notes.strip(),
                 )
-                if ok:
-                    st.success("已保存审核，工单状态更新为审核中")
+                if not saved:
+                    st.error("发布失败：审核内容未能写入数据库，请先点「保存审核」后重试")
+                elif memory.publish_task(tid):
+                    st.success("建议已发布给农户，农户端可凭工单编号查看最终方案")
                     st.rerun()
                 else:
-                    st.error("保存失败")
+                    st.error("发布失败：未找到该工单或结论/建议为空，请重试")
 
-        with btn2:
-            if st.button("发布给农户", key=f"btn_pub_{tid}"):
-                if not final_diagnosis.strip() and not final_recommendation.strip():
-                    st.error("发布前请先填写诊断结论或防治建议")
-                else:
-                    ok = memory.publish_task(tid)
-                    if ok:
-                        st.success("建议已发布，工单状态更新为已发布")
-                        st.rerun()
-                    else:
-                        st.error("发布失败")
+    with btn3:
+        if st.button("关闭工单", key=f"btn_close_{tid}"):
+            ok = memory.close_task(tid)
+            if ok:
+                st.info("工单已关闭")
+                st.rerun()
 
-        with btn3:
-            if st.button("关闭工单", key=f"btn_close_{tid}"):
-                ok = memory.close_task(tid)
-                if ok:
-                    st.info("工单已关闭")
-                    st.rerun()
+    with btn4:
+        if st.button("删除", key=f"btn_del_{tid}"):
+            ok = memory.delete_task(tid)
+            if ok:
+                st.warning("工单已删除")
+                st.rerun()
 
-        with btn4:
-            if st.button("删除", key=f"btn_del_{tid}"):
-                ok = memory.delete_task(tid)
-                if ok:
-                    st.warning("工单已删除")
-                    st.rerun()
+    if task.get("status") == STATUS_COMPLETED and task.get("publish_time"):
+        st.success(f"已于 {fmt_cn_time(task['publish_time'])} 发布给农户")
 
-        if task.get("status") == STATUS_COMPLETED and task.get("publish_time"):
-            st.success(f"已于 {fmt_cn_time(task['publish_time'])} 发布给农户")
+    if task.get("status") == STATUS_CLOSED and task.get("close_time"):
+        st.info(f"已于 {fmt_cn_time(task['close_time'])} 完成归档")
 
-        if task.get("status") == STATUS_CLOSED and task.get("close_time"):
-            st.info(f"已于 {fmt_cn_time(task['close_time'])} 完成归档")
-
-        st.divider()
-        st.markdown("### 处理流转")
-        published = bool(task.get("publish_time"))
-        reviewing = task["status"] in (STATUS_PROCESSING, STATUS_COMPLETED, STATUS_CLOSED)
-        flow_steps = [
-            ("农户提交", "done"),
-            ("AI分析", "done"),
-            ("专家审核", "done" if (reviewing or published) else "current"),
-            ("方案发布", "done" if published else ("current" if reviewing else "pending")),
-        ]
-        st.markdown(flow_steps_html(flow_steps), unsafe_allow_html=True)
-        st.caption(
-            f"提交时间　{fmt_cn_time(task.get('create_time', ''))}"
-            + (f"　发布给农户　{fmt_cn_time(task['publish_time'])}" if published else "")
-        )
+    st.divider()
+    st.markdown("### 处理流转")
+    published = bool(task.get("publish_time"))
+    reviewing = task["status"] in (STATUS_PROCESSING, STATUS_COMPLETED, STATUS_CLOSED)
+    flow_steps = [
+        ("农户提交", "done"),
+        ("AI分析", "done"),
+        ("专家审核", "done" if (reviewing or published) else "current"),
+        ("方案发布", "done" if published else ("current" if reviewing else "pending")),
+    ]
+    st.markdown(flow_steps_html(flow_steps), unsafe_allow_html=True)
+    st.caption(
+        f"提交时间　{fmt_cn_time(task.get('create_time', ''))}"
+        + (f"　发布给农户　{fmt_cn_time(task['publish_time'])}" if published else "")
+    )

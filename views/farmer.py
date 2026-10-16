@@ -578,11 +578,15 @@ def _render_history_detail(rec: dict) -> None:
     st.markdown("**风险等级**")
     # 修复：风险徽章是 HTML，之前未加 unsafe_allow_html，页面上会显示成一串标签源码（看起来像乱码）
     st.markdown(f"{html.escape(str(risk))} {risk_badge_html(risk)}", unsafe_allow_html=True)
-    st.markdown("**诊断结论/摘要**")
+    # 诊断结论/摘要 + 导出记录（按用户要求：只放按钮，不展示报告正文）
+    c_head, c_btn = st.columns([3, 1])
+    with c_head:
+        st.markdown("**诊断结论/摘要**")
+    with c_btn:
+        _history_export_button(rec)
     st.markdown(rec.get("diagnosis_summary") or "（记录中无诊断摘要）")
     st.markdown("**未经审核的原始建议（AI 生成，尚未经农技员审核）**")
     st.markdown(rec.get("recommendation_summary") or "（记录中无原始建议）")
-    _render_history_full_report(rec)
 
 
 def _ts_value(ts: str) -> float:
@@ -611,30 +615,30 @@ def _find_task_for_record(rec: dict) -> Optional[dict]:
     return min(with_content, key=lambda t: abs(_ts_value(t.get("create_time") or "") - rec_v))
 
 
-def _render_history_full_report(rec: dict) -> None:
-    """历史记录的完整报告：能找到关联工单就提供"查看 + 下载"，找不到就如实说明。"""
+def _history_export_button(rec: dict) -> None:
+    """「导出记录」按钮：直接导出该条历史记录的完整报告（找不到完整报告时导出摘要）。
+
+    按用户要求：只放按钮、不在页面上展示报告正文。
+    """
     task = _find_task_for_record(rec)
     content = (((task or {}).get("ai_result") or {}).get("content") or "").strip()
     if not content:
-        st.caption("该历史记录仅保存诊断摘要，完整报告未留存。")
-        return
-    from components.markdown_helper import plain_report_html, strip_md
-    key = str(task.get("task_id") or rec.get("timestamp") or "hist")
-    with st.expander("查看完整诊断报告（可展开 / 可下载）", expanded=False):
-        st.markdown(plain_report_html(content), unsafe_allow_html=True)
-        c1, c2 = st.columns(2)
-        with c1:
-            st.download_button(
-                "下载完整报告（Markdown）", data=content.encode("utf-8"),
-                file_name=f"农智链AgriAgent_诊断报告_{key}.md", mime="text/markdown",
-                use_container_width=True, key=f"hist_md_{key}",
-            )
-        with c2:
-            st.download_button(
-                "下载纯文本", data=strip_md(content).encode("utf-8"),
-                file_name=f"农智链AgriAgent_诊断报告_{key}.txt", mime="text/plain",
-                use_container_width=True, key=f"hist_txt_{key}",
-            )
+        # 兜底：导出已保存的摘要（保证按钮永远可用）
+        content = (
+            "# 农智链AgriAgent 诊断记录\n\n"
+            f"诊断时间：{fmt_cn_time(str(rec.get('timestamp') or ''))}\n"
+            f"地块信息：{rec.get('location', '')} · {rec.get('crop', '')}"
+            f" · {rec.get('growth_stage', '')} · {rec.get('area', '')}亩\n"
+            f"风险等级：{rec.get('risk_level') or '未知'}\n\n"
+            f"## 诊断结论/摘要\n{rec.get('diagnosis_summary') or '（无）'}\n\n"
+            f"## 未经审核的原始建议\n{rec.get('recommendation_summary') or '（无）'}\n"
+        )
+    key = str((task or {}).get("task_id") or rec.get("timestamp") or "hist")
+    st.download_button(
+        "导出记录", data=content.encode("utf-8"),
+        file_name=f"农智链AgriAgent_诊断记录_{key}.md", mime="text/markdown",
+        use_container_width=True, key=f"hist_export_{key}",
+    )
 
 
 def _render_my_history() -> None:
