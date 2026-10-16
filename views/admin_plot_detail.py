@@ -32,8 +32,43 @@ _LOG_META = {
 # ---------------------------------------------------------------------------
 # 纯函数（供页面渲染与测试复用）
 # ---------------------------------------------------------------------------
+def _diagnosis_snippet(rec: dict, max_len: int = 160) -> str:
+    """取一次诊断的可读摘要：优先用**完整报告**（content 列），挑有信息量的句子。
+
+    为什么改：以前直接用 diagnosis_summary 再截 50 字，实际看到的是
+    "### 1. 观察到的症状"这种半截标题（用户反馈"内容不全"）。
+    现在从完整报告（没有则退回摘要）里挑 1–2 句实质内容：
+    跳过纯标题行、去掉 # 与 *，长度上限 max_len。
+    """
+    from components.markdown_helper import strip_md
+    source = (strip_md(str(rec.get("content") or ""))
+              or strip_md(str(rec.get("diagnosis_summary") or "")))
+    if not source:
+        return ""
+
+    skip = {
+        "观察到的症状", "可能性排序", "防治方案", "农事管理建议", "风险提示",
+        "物理防治", "生物防治", "化学防治", "农事建议", "诊断结论", "综合判断",
+        "基本信息", "诊断特征", "发生条件", "防治建议",
+    }
+    picked: list[str] = []
+    total = 0
+    for raw in source.splitlines():
+        s = raw.strip()
+        if len(s) < 8 or s.rstrip("：:") in skip:
+            continue
+        picked.append(s)
+        total += len(s)
+        if total >= max_len or len(picked) >= 2:
+            break
+
+    text = "；".join(picked) if picked else ""
+    return text[:max_len] + ("…" if len(text) > max_len else "")
+
+
 def build_timeline(records: list, profile: dict, logs: list) -> list[tuple]:
     """组装生长档案时间轴事件：(时间, 标题, 详情)，按时间正序。"""
+    from components.markdown_helper import strip_md
     events: list[tuple] = []
 
     if profile.get("planting_date"):
@@ -46,17 +81,19 @@ def build_timeline(records: list, profile: dict, logs: list) -> list[tuple]:
             events.append((r["timestamp"], f"生育阶段　{stage}", "阶段变化记录"))
             prev_stage = stage
         risk = r.get("risk_level") or "未知"
-        events.append((
-            r["timestamp"], "智能诊断",
-            f"{r.get('growth_stage','')}　风险 {risk}　{r.get('diagnosis_summary','')[:50]}",
-        ))
-        rec_text = r.get("recommendation_summary", "")
-        if any(k in rec_text for k in ("防治", "打药", "喷雾", "药剂")):
-            events.append((r["timestamp"], "防治记录", rec_text[:80]))
+        detail = f"{r.get('growth_stage', '')}　风险 {risk}"
+        snip = _diagnosis_snippet(r)
+        if snip:
+            detail += f"　{snip}"
+        events.append((r["timestamp"], "智能诊断", detail))
+        rec_text = strip_md(str(r.get("recommendation_summary") or ""))
+        if rec_text and any(k in rec_text for k in ("防治", "打药", "喷雾", "药剂", "用药")):
+            events.append((r["timestamp"], "防治记录",
+                           rec_text[:200] + ("…" if len(rec_text) > 200 else "")))
 
     for lg in logs:
         label = _LOG_META.get(lg.get("type", ""), (lg.get("type", ""),))[0]
-        events.append((lg["timestamp"], label, lg.get("note", "")))
+        events.append((lg["timestamp"], label, str(lg.get("note", "") or "")))
 
     events.sort(key=lambda e: e[0])
     return events

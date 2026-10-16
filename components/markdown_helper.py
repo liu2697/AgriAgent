@@ -149,6 +149,11 @@ def plan_html(text: str) -> str:
       - 编号条目转成列表
     这样方案看起来是一份计划表，而不是一坨文字。
     """
+    # 归一化全角/特殊星号（模型偶尔输出 ＊＊ / ∗∗ / ✱），否则下面的加粗识别匹配不到，
+    # 页面上就会露出星号（用户实测：生长计划标题旁边出现 **第1周…**）。
+    text = (text or "")
+    for ch in ("＊", "∗", "✱", "✳", "✽", "❋"):
+        text = text.replace(ch, "*")
     norm = normalize_md(text)
     if not norm:
         return '<div class="ag-plan-empty">（方案内容为空）</div>'
@@ -179,9 +184,13 @@ def plan_html(text: str) -> str:
             it = re.sub(r"^\s*[*]\s+", "", it)
             it = html.escape(it)
             it = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", it)
+            # 兜底：转换后仍有落单星号/井号时直接去掉，页面上绝不显示记号
+            it = re.sub(r"\*+", "", it)
+            it = re.sub(r"#{1,6}\s*", "", it)
             rows.append(f"<li>{it}</li>")
         list_html = f"<ul>{''.join(rows)}</ul>" if rows else ""
         if title:
+            title = re.sub(r"[*#]+", "", title).strip()
             parts.append(
                 '<div class="ag-plan-block">'
                 f'<div class="ag-plan-block-title">{html.escape(title)}</div>'

@@ -174,8 +174,18 @@ def _render_search_tab(diseases: list[dict]) -> None:
                     st.markdown(f"- {s}")
 
                 st.markdown("##### 发生条件")
-                for c in entry.get("occurrence_conditions", []) or []:
-                    st.markdown(f"- {c}")
+                # 知识库 JSON 里的字段名是 favorable_conditions（有利发生条件），
+                # 手动新增条目时用的键是 occurrence_conditions —— 两个都读，
+                # 否则真实知识条目这一栏会显示为空（用户反馈的问题）。
+                conds = (entry.get("favorable_conditions")
+                         or entry.get("occurrence_conditions") or [])
+                if isinstance(conds, str):
+                    conds = [conds]
+                if conds:
+                    for c in conds:
+                        st.markdown(f"- {c}")
+                else:
+                    st.caption("该条目未填写发生条件。")
 
             with col_right:
                 st.markdown("##### 诊断特征")
