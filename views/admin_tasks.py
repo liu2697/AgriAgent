@@ -202,6 +202,7 @@ def _render_task_detail(task: dict, tid: str) -> None:
         info_rows = [
             ("工单编号", _short_id(tid)),
             ("农户名称", task.get("farmer_name", "") or "未填写"),
+            ("联系电话", task.get("contact", "") or "未填写"),
             ("地块名称", ((task.get("plot_key", "") or "").replace("::", "　").replace("·", " ")) or "未填写"),
             ("位置", (task.get("location", "") or "").replace("·", " ") or "未填写"),
             ("作物", task.get("crop", "")),
@@ -210,6 +211,7 @@ def _render_task_detail(task: dict, tid: str) -> None:
             ("生育阶段", ((task.get("growth_stage") or "").replace("—", "")) or "未填写"),
             ("提交时间", fmt_cn_time(task.get("create_time", ""))),
             ("风险等级", ai.get("risk_level", "未知")),
+            ("农户描述", task.get("symptoms", "") or "未填写"),
         ]
         rows_html = "".join(
             f'<div style="display:flex;justify-content:space-between;gap:0.8rem;'

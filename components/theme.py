@@ -1463,6 +1463,23 @@ hr, .stDivider {{
 .ag-rpt-advice-body ul {{ margin: 0; padding-left: 1.1rem; }}
 .ag-rpt-advice-body li {{ margin-bottom: 0.15rem; }}
 
+/* -------- 农户端精简建议（要点式，宽松行距 + 重点加粗）-------- */
+.ag-rpt-brief {{
+    margin: 0.1rem 0 0.15rem;
+    padding-left: 1.15rem;
+}}
+.ag-rpt-brief li {{
+    line-height: 1.95;
+    margin-bottom: 0.42rem;
+    color: #37474f;
+    font-size: 0.86rem;
+}}
+.ag-rpt-brief li:last-child {{ margin-bottom: 0.1rem; }}
+.ag-rpt-brief li strong {{
+    color: #1b5e20;
+    font-weight: 700;
+}}
+
 .ag-rpt-risk-block {{
     border-left-color: {t.warning};
 }}
