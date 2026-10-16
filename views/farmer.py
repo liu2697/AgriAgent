@@ -256,7 +256,8 @@ def _render_safety_issues(issues: list, warnings: list) -> None:
 def _render_safety_record(result: dict) -> None:
     """P1-3：完整安全审核记录（证据留存，纯读取，不调用任何服务）。"""
     with st.expander("查看完整安全审核记录", expanded=False):
-        st.markdown(result.get("review_summary") or "（无审核摘要记录）")
+        # 展示前去 Markdown 记号，避免页面上露出 # 与 *
+        st.markdown(_clean_markdown(str(result.get("review_summary") or "")) or "（无审核摘要记录）")
 
 
 def _render_result(result, *, crop, growth_stage, area, soil_type, location,
@@ -602,10 +603,11 @@ def _render_history_detail(rec: dict) -> None:
     # 修复：风险徽章是 HTML，之前未加 unsafe_allow_html，页面上会显示成一串标签源码（看起来像乱码）
     st.markdown(f"{html.escape(str(risk))} {risk_badge_html(risk)}", unsafe_allow_html=True)
     # 诊断结论/摘要 + 未经审核的原始建议（页面只展示摘要，完整报告用下方按钮导出）
+    # 展示前统一去掉 Markdown 记号，避免页面上出现落单的 # / *
     st.markdown("**诊断结论/摘要**")
-    st.markdown(rec.get("diagnosis_summary") or "（记录中无诊断摘要）")
+    st.markdown(_clean_markdown(str(rec.get("diagnosis_summary") or "")) or "（记录中无诊断摘要）")
     st.markdown("**未经审核的原始建议（AI 生成，尚未经农技员审核）**")
-    st.markdown(rec.get("recommendation_summary") or "（记录中无原始建议）")
+    st.markdown(_clean_markdown(str(rec.get("recommendation_summary") or "")) or "（记录中无原始建议）")
     st.markdown("**导出记录**")
     _history_export_button(rec)
 
@@ -684,15 +686,22 @@ def _render_my_history() -> None:
 
     st.markdown("##### 我的历史诊断")
 
-    if not my_plots:
-        _history_empty_hint()
-        return
-
-    try:
-        records = _collect_my_records(my_plots, limit=5)
-    except Exception as exc:  # 数据层异常：如实提示，不伪造空数据
-        st.warning(f"历史诊断读取失败：{exc}")
-        return
+    if my_plots:
+        try:
+            records = _collect_my_records(my_plots, limit=5)
+        except Exception as exc:  # 数据层异常：如实提示，不伪造空数据
+            st.warning(f"历史诊断读取失败：{exc}")
+            return
+    else:
+        # 本会话没有地块记录（例如刷新过页面、或换了浏览器）时，回退显示最近完成的诊断记录；
+        # 否则数据库里明明有记录，页面却显示"暂无历史诊断记录"（用户实际遇到的问题）。
+        try:
+            records = memory.get_recent_all(limit=5)
+        except Exception as exc:
+            st.warning(f"历史诊断读取失败：{exc}")
+            return
+        if records:
+            st.caption("本会话尚未记录地块信息，以下显示最近完成的诊断记录。")
 
     if not records:
         _history_empty_hint()
@@ -1168,6 +1177,10 @@ def _clean_markdown(text: str) -> str:
     t = re.sub(r"^-{3,}\s*$", "", t, flags=re.MULTILINE)                     # 分隔线
     t = re.sub(r"^\|.*\|\s*$", "", t, flags=re.MULTILINE)                    # 表格行
     t = re.sub(r"^\s*(?:[-*+•]|\d+[.、)])\s*", "", t, flags=re.MULTILINE)    # 列表符号
+    # 句内残留记号：模型常把标题写成"……仅标题为「### 1. 观察到的症状」"或留下落单星号，
+    # 这些在页面上会原样显示成 # 与 *（用户反馈），这里一并清掉。
+    t = re.sub(r"#{1,6}\s*", "", t)
+    t = re.sub(r"\*+", "", t)
     lines = [ln.strip() for ln in t.splitlines() if ln.strip()]
     return "\n".join(lines)
 
@@ -1511,6 +1524,33 @@ def _find_task_by_short(query: str):
     return None
 
 
+def _final_plan_export_text(task: dict, task_id: str) -> str:
+    """生成「最终方案」导出正文：农技员结论/建议 + 工单信息 + AI 初步诊断全文。
+
+    只导出结论/建议时，若农技员填的是"无"，文件里就只有几行字（用户反馈过）；
+    因此把 AI 初步诊断与工单信息一并写入，保证导出文件始终有实质内容。
+    """
+    ai = task.get("ai_result", {}) or {}
+    final_diag = (task.get("final_diagnosis") or "").strip()
+    final_rec = (task.get("final_recommendation") or "").strip()
+    text = (
+        "# 农技员最终方案\n\n"
+        f"工单编号：{_short_id(task_id)}\n"
+        f"地块信息：{task.get('location', '')} · {task.get('crop', '')}"
+        f" · {task.get('area', 0)}亩\n"
+        f"风险等级：{ai.get('risk_level') or '未知'}\n"
+        f"提交时间：{fmt_cn_time(task.get('create_time', ''))}\n"
+        f"审核人：{task.get('reviewer') or '（未填写）'}\n"
+        f"审核时间：{fmt_cn_time(task.get('publish_time', ''))}\n\n"
+        f"## 一、诊断结论\n{final_diag or '（农技员未单独填写，参见下方 AI 初步诊断）'}\n\n"
+        f"## 二、防治建议\n{final_rec or '（农技员未单独填写，参见下方 AI 初步诊断）'}\n"
+    )
+    ai_full = str(ai.get("content") or "").strip()
+    if ai_full:
+        text += f"\n## 三、AI 初步诊断（供对照）\n{ai_full}\n"
+    return text
+
+
 def _render_task_status_card(task_id: str) -> None:
     task = memory.get_task(task_id)
     if not task:
@@ -1584,15 +1624,10 @@ def _render_task_status_card(task_id: str) -> None:
             '</div></div>',
             unsafe_allow_html=True,
         )
-        plan_text = (
-            "# 农技员最终方案\n\n"
-            f"## 诊断结论\n{final_diag or '未填写'}\n\n"
-            f"## 防治建议\n{final_rec or '未填写'}\n\n"
-            f"审核时间：{fmt_cn_time(task.get('publish_time', ''))}\n"
-        )
+        # 导出内容：农技员最终方案 + 工单信息 + AI 初步诊断全文（见 _final_plan_export_text）
         from components.export_buttons import render_export_buttons
         render_export_buttons(
-            plan_text,
+            _final_plan_export_text(task, task_id),
             stem=f"农智链AgriAgent_最终方案_{_short_id(task_id)}",
             key_prefix=f"final_{task_id}",
         )

@@ -276,3 +276,49 @@ def number_sections(text: str) -> str:
 def format_report_for_review(content: str) -> str:
     """管理端完整报告格式化：章节编号 + 重点加粗（药剂/剂量/风险词）。"""
     return number_sections(emphasize_key_parts(content))
+
+
+def report_html(content: str) -> str:
+    """把 AI 诊断报告渲染成 HTML：章节编号 + 重点加粗 + 风险标红。
+
+    为什么不用 Markdown 渲染：模型输出里常混有落单的 # / *（例如 "*注："、"--"），
+    交给 Markdown 渲染就会在页面上露出星号、井号（用户反馈的实际问题）。
+    这里统一走"转义 + 显式生成标签"，页面上不会再出现 # 与 *。
+    """
+    out: list[str] = []
+    n1 = n2 = 0
+    for raw in (content or "").splitlines():
+        line = raw.rstrip()
+        if not line.strip():
+            continue
+
+        head = re.match(r"^\s{0,3}(#{1,6})\s*(.+?)\s*$", line)
+        if head:
+            level = len(head.group(1))
+            # 标题里的 * 与 # 全部清掉（模型常在标题里再套一层 **加粗**，
+            # 只在首尾清理会漏掉中间的星号，页面上就会露出 ** 来）
+            title = head.group(2).replace("*", "").replace("#", "").strip()
+            if title and not re.match(r"^[（(]?\d+[）)、.]", title):
+                if level <= 3:
+                    n1 += 1
+                    n2 = 0
+                    title = f"{n1}. {title}"
+                else:
+                    n2 += 1
+                    title = f"（{n2}）{title}"
+            cls = "ag-rep-h1" if level <= 3 else "ag-rep-h2"
+            out.append(f'<div class="{cls}">{html.escape(title)}</div>')
+            continue
+
+        bullet = bool(re.match(r"^\s*[-*+•]\s+", line))
+        text = re.sub(r"^\s*[-*+•]\s+", "", line)
+        t = html.escape(text).replace("*", "").replace("#", "")   # 清掉残留记号
+        t = _DOSE_RE.sub(lambda m: f"<strong>{m.group(0)}</strong>", t)
+        for w in _DANGER_WORDS:
+            if w in t:
+                t = t.replace(w, f'<strong style="color:#c62828">{w}</strong>')
+        out.append(f'<div class="ag-rep-line">{"· " if bullet else ""}{t}</div>')
+
+    if not out:
+        return ""
+    return f'<div class="ag-rep">{"".join(out)}</div>'

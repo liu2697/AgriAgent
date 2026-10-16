@@ -49,6 +49,10 @@ def strip_md(text: str) -> str:
     t = re.sub(r"^-{3,}\s*$", "", t, flags=re.MULTILINE)                      # 分隔线
     t = re.sub(r"^\|.*\|\s*$", "", t, flags=re.MULTILINE)                     # 表格行
     t = re.sub(r"^\s*(?:[-*+•]|\d+[.、)])\s*", "", t, flags=re.MULTILINE)     # 列表/编号符
+    # 句内残留记号：模型常在句子里引用标题（"### 1. 观察到的症状"）或留下落单星号，
+    # 不去掉就会在页面/导出文件里露出 # 与 *（用户反馈）。
+    t = re.sub(r"#{1,6}\s*", "", t)
+    t = re.sub(r"\*+", "", t)
     lines = [ln.strip() for ln in t.splitlines() if ln.strip()]
     return "\n".join(lines)
 

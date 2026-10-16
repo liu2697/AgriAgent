@@ -250,14 +250,12 @@ def _render_task_detail(task: dict, tid: str) -> None:
         )
 
     # ========== 第 2 行：完整 AI 诊断报告（全宽折叠；章节编号 + 重点加粗） ==========
-    # 注意：不能用 plain_report_html —— 它会剥掉行首编号与加粗标记；
-    # 这里用 normalize_md 规范化后交给 Streamlit 原生 Markdown 渲染，编号与加粗都能保留。
-    from components.markdown_helper import normalize_md
-    from components.advice_brief import format_report_for_review
+    # 用 HTML 渲染（report_html）而不是 Markdown：模型输出里的落单 # / * 不会露到页面上。
+    from components.advice_brief import report_html
     with st.expander("展开完整 AI 诊断报告（已编号、重点加粗）", expanded=False):
         st.markdown(
-            normalize_md(format_report_for_review(ai_content))
-            if ai_content.strip() else "（无诊断内容）"
+            report_html(ai_content) if ai_content.strip() else "（无诊断内容）",
+            unsafe_allow_html=True,
         )
 
     # ========== 第 3 行：农技员审核修改（横向分布，占满整宽） ==========

@@ -7,6 +7,7 @@ import streamlit as st
 
 from components.charts import RISK_COLORS, hbar_html
 from components.layout import fmt_cn_time
+from components.markdown_helper import strip_md
 from memory import history as memory
 from services import stats
 
@@ -68,10 +69,11 @@ def render() -> None:
         for r in high_risk:
             loc = r.get("location") or "未命名地块"
             with st.expander(f"{loc}　{fmt_cn_time(r['timestamp'])}"):
+                # 摘要文本来自模型输出，展示前去掉 Markdown 记号，避免露出 # 与 *
                 st.markdown(f"- 作物　{r.get('crop', '')}")
                 st.markdown(f"- 生育阶段　{r.get('growth_stage', '')}")
-                st.markdown(f"- 诊断摘要　{r.get('diagnosis_summary', '')}")
-                st.markdown(f"- 建议摘要　{r.get('recommendation_summary', '')[:200]}")
+                st.markdown(f"- 诊断摘要　{strip_md(str(r.get('diagnosis_summary', '')))}")
+                st.markdown(f"- 建议摘要　{strip_md(str(r.get('recommendation_summary', '')))[:200]}")
     else:
         st.success("目前没有高风险记录。")
 

@@ -2,6 +2,7 @@
 import streamlit as st
 
 from components.layout import fmt_cn_time, plot_stats_html
+from components.markdown_helper import strip_md
 from memory import history as memory
 from memory import profiles
 from services import stats
@@ -40,8 +41,9 @@ def render() -> None:
                 unsafe_allow_html=True,
             )
 
-            st.markdown(f"最近诊断摘要　{p.get('last_summary', '') or '暂无'}")
-            st.markdown(f"最近建议摘要　{(p.get('last_recommendation', '') or '暂无')[:200]}")
+            # 摘要来自模型输出，展示前去掉 Markdown 记号，避免露出 # 与 *
+            st.markdown(f"最近诊断摘要　{strip_md(str(p.get('last_summary', ''))) or '暂无'}")
+            st.markdown(f"最近建议摘要　{strip_md(str(p.get('last_recommendation', '')))[:200] or '暂无'}")
 
             hist = memory.get_history(p["location"], p["crop"], p["area"], limit=20)
             if hist:

@@ -1493,6 +1493,29 @@ ol.ag-rpt-brief li::marker {{
     color: {t.brand};
     font-weight: 700;
 }}
+/* 管理端完整报告（HTML 渲染，页面上不会出现 # 与 *） */
+.ag-rep {{
+    line-height: 1.9;
+    font-size: 0.86rem;
+    color: #37474f;
+}}
+.ag-rep-h1 {{
+    font-weight: 800;
+    color: #1b5e20;
+    font-size: 0.92rem;
+    margin: 0.7rem 0 0.35rem;
+}}
+.ag-rep-h2 {{
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 0.88rem;
+    margin: 0.5rem 0 0.25rem;
+}}
+.ag-rep-line {{
+    margin-bottom: 0.28rem;
+    padding-left: 0.2rem;
+}}
+.ag-rep-line strong {{ color: #1b5e20; }}
 
 .ag-rpt-risk-block {{
     border-left-color: {t.warning};
